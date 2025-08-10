@@ -110,3 +110,19 @@ char **Glumity_FileSystem_GetAllDllFilesFromDirectory(const char *dir, int *outC
 
     return dllFiles;
 }
+
+const char *Glumity_GetFileNameFromPath(const char *path)
+{
+    const char *slash = strrchr(path, '/');
+    const char *backslash = strrchr(path, '\\');
+    const char *filename = path;
+
+    if (slash && backslash)
+        filename = (slash > backslash) ? slash + 1 : backslash + 1;
+    else if (slash)
+        filename = slash + 1;
+    else if (backslash)
+        filename = backslash + 1;
+
+    return filename;
+}

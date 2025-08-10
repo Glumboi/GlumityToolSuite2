@@ -52,64 +52,8 @@ namespace GlumityV2Dumper
             }
         }
 
-        void PrintClassMethods(const char *className)
-        {
-            if (!className)
-                return;
-
-            for (auto *c : m_gameClasses)
-            {
-                // Check class name
-                if (c->m_pName && strcmp(c->m_pName, className) == 0)
-                {
-                    void *iter = nullptr;
-                    Unity::il2cppMethodInfo *method;
-
-                    while ((method = IL2CPP::Class::GetMethods(c, &iter)) != nullptr)
-                    {
-                        GlumityPlugin_printf("Found %s in %s\n", PRINT_HEAD, method->m_pName, className);
-                    }
-                }
-            }
-        }
-
-        uintptr_t DumpClassMethodOffset(const char *className, const char *methodName)
-        {
-            if (!className || !methodName)
-                return 0;
-
-            for (auto *c : m_gameClasses)
-            {
-                // Check class name
-                if (c->m_pName && strcmp(c->m_pName, className) == 0)
-                {
-                    void *iter = nullptr;
-                    Unity::il2cppMethodInfo *method;
-
-                    while ((method = IL2CPP::Class::GetMethods(c, &iter)) != nullptr)
-                    {
-                        if (method->m_pName && strcmp(method->m_pName, methodName) == 0)
-                        {
-                            uintptr_t addr = reinterpret_cast<uintptr_t>(method->m_pMethodPointer);
-                            uintptr_t offset = addr - reinterpret_cast<uintptr_t>(GetModuleHandleA("GameAssembly.dll"));
-
-                            GlumityPlugin_printf(
-                                "Found %s::%s at offset 0x%llX\n",
-                                PRINT_HEAD,
-                                c->m_pName,
-                                method->m_pName,
-                                (unsigned long long)offset);
-
-                            return offset;
-                        }
-                    }
-                }
-            }
-
-            GlumityPlugin_printf("Method %s not found in class %s\n", PRINT_HEAD, methodName, className);
-            return 0;
-        }
-
         ~Dumper() = default;
     };
+
+  
 }

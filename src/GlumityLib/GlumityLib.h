@@ -4,6 +4,12 @@
 #include <windows.h>
 #include <stdio.h>
 
+#define GLUMITYV2_DUMPER_MODULE "001GlumityV2IL2CPPDumper"
+#define GLUMITYV2_DUMPER_DLL "001GlumityV2IL2CPPDumper.dll"
+
+#define GLUMITYV2_MODULE "GlumityToolSuite2"
+#define GLUMITYV2_DLL "GlumityToolSuite2.dll"
+
 #ifdef __cplusplus
 extern "C"
 {
@@ -31,6 +37,15 @@ extern "C"
     (exportType) GetProcAddress(mod, exportName);
 
     void GlumityV2Exports_Init(GlumityV2Exports *exports, HMODULE mod);
+
+    typedef void *(*GlumityV2Dumper_GetFunctionPointer_t)(const char *, const char *);
+    typedef struct
+    {
+        GlumityV2Dumper_GetFunctionPointer_t GlumityV2Dumper_GetFunctionPointer;
+    } GlumityV2DumperExports;
+
+    // Only works if dumper plugin is loaded
+    void GlumityV2DumperExports_Init(GlumityV2DumperExports *dumperExports);
 
 #ifdef __cplusplus
 }

@@ -32,3 +32,18 @@ void GlumityV2Exports_Init(GlumityV2Exports *exports, HMODULE mod)
     // Init exports
     exports->GetLoaderInstance = INIT_GLUMITYV2_EXPORT(mod, "GetLoaderInstance", GetLoaderInstance_t);
 }
+
+void GlumityV2DumperExports_Init(GlumityV2DumperExports *dumperExports)
+{
+    if (!dumperExports)
+        return;
+
+    HMODULE mod = GetModuleHandleA(GLUMITYV2_DUMPER_MODULE);
+    if (!mod)
+    {
+        Glumity_printf("Failed to init GlumityV2IL2CPPDumper exports, make sure the GlumityV2IL2CPPDumper plugin is installed and loaded!\n");
+        return;
+    }
+
+    dumperExports->GlumityV2Dumper_GetFunctionPointer = INIT_GLUMITYV2_EXPORT(mod, "GlumityV2Dumper_GetFunctionPointer", GlumityV2Dumper_GetFunctionPointer_t);
+}

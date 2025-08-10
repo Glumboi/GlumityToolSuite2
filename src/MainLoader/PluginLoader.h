@@ -24,7 +24,7 @@ GlumityPluginLoader GlumityPluginLoader_Create();
 uint8_t GlumityPluginLoader_LoadPlugin(GlumityPluginLoader *loader, const char *dllPath);
 void GlumityPluginLoader_LoadAllPlugins(GlumityPluginLoader *loader);
 void GlumityPluginLoader_ReloadAllPlugins(GlumityPluginLoader *loader);
-void GlumityPluginLoader_Destroy(GlumityPluginLoader* loader);
-void GlumityPluginLoader_KeyboardRun(GlumityPluginLoader* loader);
+void GlumityPluginLoader_Destroy(GlumityPluginLoader *loader);
+void GlumityPluginLoader_KeyboardRun(GlumityPluginLoader *loader);
 
 #endif

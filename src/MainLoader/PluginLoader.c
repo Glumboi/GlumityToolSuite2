@@ -50,8 +50,10 @@ void GlumityPluginLoader_LoadAllPlugins(GlumityPluginLoader *loader)
 
     int cnt = 0;
     char **dllFiles = Glumity_FileSystem_GetAllDllFilesFromDirectory(loader->pluginsPath, &cnt);
+
     if (!dllFiles)
         return;
+
     for (size_t i = 0; i < cnt; i++)
     {
         if (!GlumityPluginLoader_LoadPlugin(loader, dllFiles[i]))

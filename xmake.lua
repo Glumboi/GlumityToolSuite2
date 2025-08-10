@@ -4,19 +4,19 @@ set_runtimes("MD") -- Use MD for release, MDd for debug
 
 add_requires("minhook")
 
--- target("GlumityLib")
---     set_kind("static")
---     add_files("src/GlumityLib/*.c")
---     add_files("src/MainLoader/*.c")
---     set_targetdir("build/GlumityLib")
---     add_links("user32")
---     after_build(
+target("GlumityLib")
+--  after_build(
 --     function (target)       
 --         -- Get the output directory of the target
 --         local outdir = path.directory(target:targetfile())
 --         -- Copy the entire folder (e.g., "assets") into the output directory
 --         os.cp("src/GlumityLib/*.h", outdir)
 --     end)
+    set_kind("static")
+    add_files("src/GlumityLib/*.c")
+    add_files("src/MainLoader/*.c")
+    add_links("user32")
+   
 
 target("ExeTest")
     set_kind("binary")
@@ -32,17 +32,18 @@ target("ExamplePlugin")
     set_kind("shared")
     add_files("src/ExamplePlugin/*.c")
     add_links("user32")
-    add_linkdirs("build/GlumityLib")
-    add_links("GlumityLib")
-    add_includedirs("build/GlumityLib")
+    add_linkdirs("build")
+    add_deps("GlumityLib")
+    add_packages("minhook")
+    add_includedirs("src/GlumityLib")
 
-target("GlumityV2IL2CPPDumper")
+target("001GlumityV2IL2CPPDumper")
     set_kind("shared")
     add_files("src/IL2CPPDumper/*.cpp")
     add_links("user32")
-    add_linkdirs("build/GlumityLib")
-    add_links("GlumityLib")
-    add_includedirs("build/GlumityLib")
+    add_linkdirs("build")
+    add_deps("GlumityLib")
+    add_includedirs("src/GlumityLib")
     set_languages("c++20")
 -- If you want to known more usage about xmake, please see https://xmake.io
 --

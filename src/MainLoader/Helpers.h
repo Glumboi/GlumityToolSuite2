@@ -18,4 +18,7 @@ void Glumity_printf(const char* fmt, ...);
 /// @return allocated using malloc/realloc
 char** Glumity_FileSystem_GetAllDllFilesFromDirectory(const char *dir, int *outCount);
 
+const char* Glumity_GetFileNameFromPath(const char* path);
+
+
 #endif
