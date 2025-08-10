@@ -27,12 +27,19 @@ void Hooks_Install(void *BiosConfig_ChangeCPUMultiplier_ptr)
         (LPVOID *)(BiosConfig_ChangeCPUMultiplier_o),
         &BiosConfig_ChangeCPUMultiplier_hook,
         (LPVOID *)&BiosConfig_ChangeCPUMultiplier_o);
-        
+
     if (stat != MH_OK)
     {
         GlumityPlugin_printf("Failed to init BiosConfig_ChangeCPUMultiplier_hook!\n", "Example Plugin");
         return;
     }
 
-    MH_EnableHook(MH_ALL_HOOKS);
+    stat = MH_EnableHook(MH_ALL_HOOKS);
+    if (stat != MH_OK)
+    {
+        GlumityPlugin_printf("Failed to enable BiosConfig_ChangeCPUMultiplier_hook!\n", "Example Plugin");
+    }
+
+        GlumityPlugin_printf("Created and enabled BiosConfig_ChangeCPUMultiplier_hook!\n", "Example Plugin");
+
 }
