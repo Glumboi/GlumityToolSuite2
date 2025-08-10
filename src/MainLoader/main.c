@@ -10,6 +10,7 @@ int main()
     if (AllocConsole())
         freopen("CONOUT$", "w", stdout);
 
+    SetConsoleOutputCP(CP_UTF8);
     Glumity_printf("Console initialized, loading plugins...\n");
 
     globalLoader = GlumityPluginLoader_Create();
