@@ -16,7 +16,10 @@ GlumityPlugin GlumityPlugin_LoadPlugin(const char *dllPath)
 
     ret.hDll = LoadLibraryA(ret.dllPath);
     if (ret.hDll)
+    {
         ret.entryPoint = (GlumityPlugin_EntryPoint)GetProcAddress(ret.hDll, "GlumityMain");
+        ret.exitPoint = (GlumityPlugin_ExitPoint)GetProcAddress(ret.hDll, "GlumityExit");
+    }
     return ret;
 }
 
@@ -25,7 +28,11 @@ void GlumityPlugin_FreePlugin(GlumityPlugin *plugin)
     if (!plugin)
         return;
 
+    if (plugin->exitPoint)
+        plugin->exitPoint();
+
     plugin->entryPoint = NULL;
+    plugin->exitPoint = NULL;
     memset(plugin->dllPath, 0, DLL_PATH_MAX);
     FreeLibrary(plugin->hDll);
 }

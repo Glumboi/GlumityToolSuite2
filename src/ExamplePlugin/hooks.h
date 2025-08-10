@@ -40,6 +40,5 @@ void Hooks_Install(void *BiosConfig_ChangeCPUMultiplier_ptr)
         GlumityPlugin_printf("Failed to enable BiosConfig_ChangeCPUMultiplier_hook!\n", "Example Plugin");
     }
 
-        GlumityPlugin_printf("Created and enabled BiosConfig_ChangeCPUMultiplier_hook!\n", "Example Plugin");
-
+    GlumityPlugin_printf("Created and enabled BiosConfig_ChangeCPUMultiplier_hook!\n", "Example Plugin");
 }

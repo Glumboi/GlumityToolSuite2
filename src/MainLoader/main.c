@@ -28,6 +28,7 @@ BOOL WINAPI DllMain(
     switch (fdwReason)
     {
     case DLL_PROCESS_ATTACH:
+        // main();
         hThread = CreateThread(0, 0, (LPTHREAD_START_ROUTINE)main, 0, 0, 0);
         CloseHandle(hThread);
         break;

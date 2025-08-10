@@ -3,10 +3,9 @@
 
 // Example plugin for PC Building Simulator 2
 
-GlumityV2Exports exports;
 GlumityV2DumperExports dumperExports;
 
-__declspec(dllexport) void GlumityMain(HMODULE glumityInternal)
+GLUMITYV2_PLUGIN_ENTRY
 {
     GlumityV2DumperExports_Init(&dumperExports);
     if (dumperExports.GlumityV2Dumper_GetFunctionPointer)
@@ -19,4 +18,9 @@ __declspec(dllexport) void GlumityMain(HMODULE glumityInternal)
         // Make a hook
         Hooks_Install(ChangeCPUMultiplierPtr);
     }
+}
+
+GLUMITYV2_PLUGIN_EXIT
+{
+    MH_DisableHook(MH_ALL_HOOKS);
 }

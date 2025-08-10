@@ -9,16 +9,19 @@
 #define DLL_PATH_MAX 260
 
 /// @brief entry point of plugins, passes a handle of glumity's loaded main dll (the loader)
-typedef void(*GlumityPlugin_EntryPoint)(HMODULE glumityInternal);
+typedef void (*GlumityPlugin_EntryPoint)();
+typedef void (*GlumityPlugin_ExitPoint)();
 
-typedef struct{
+typedef struct
+{
     char dllPath[DLL_PATH_MAX];
     GlumityPlugin_EntryPoint entryPoint;
+    GlumityPlugin_ExitPoint exitPoint;
 
     HMODULE hDll;
 } GlumityPlugin;
 
-GlumityPlugin GlumityPlugin_LoadPlugin(const char* dllPath);
-void GlumityPlugin_FreePlugin(GlumityPlugin* plugin);
+GlumityPlugin GlumityPlugin_LoadPlugin(const char *dllPath);
+void GlumityPlugin_FreePlugin(GlumityPlugin *plugin);
 
 #endif

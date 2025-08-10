@@ -17,13 +17,24 @@ namespace GlumityV2Dumper
         GlumityV2Exports m_exports = {0};
         GlumityPluginLoader *m_loader = nullptr;
 
+        bool InitIL2CPPResolver()
+        {
+            // init IL2CPP
+            if (IL2CPP::Initialize(true) && IL2CPP::Thread::Attach(IL2CPP::Domain::Get()))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
     public:
         Dumper() = default;
 
-        void Init(HMODULE glumityInternal)
+        void Init()
         {
             GlumityPlugin_printf("GlumityMain called, initializing IL2CPP...\n", PRINT_HEAD);
-            if (!IL2CPP::Initialize())
+            if (!InitIL2CPPResolver())
             {
                 GlumityPlugin_printf("Failed to init IL2CPP, aborting...\n", PRINT_HEAD);
                 return;
@@ -31,9 +42,10 @@ namespace GlumityV2Dumper
             GlumityPlugin_printf("Initialized IL2CPP!\n", PRINT_HEAD);
 
             GlumityPlugin_printf("Initializing GlumityV2Exports...\n", PRINT_HEAD);
-            GlumityV2Exports_Init(&m_exports, glumityInternal);
+            GlumityV2Exports_Init(&m_exports);
             GlumityPlugin_printf("Initialized GlumityV2Exports!\n", PRINT_HEAD);
 
+            m_loader = m_exports.GetLoaderInstance();
             GlumityPlugin_printf("GlumityV2 PluginLoader: %p\n", PRINT_HEAD, m_loader);
 
             size_t outSz = 0;
@@ -52,8 +64,10 @@ namespace GlumityV2Dumper
             }
         }
 
-        ~Dumper() = default;
+        ~Dumper()
+        {
+            m_gameClasses.clear();
+        };
     };
 
-  
 }

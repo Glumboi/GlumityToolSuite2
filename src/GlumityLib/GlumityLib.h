@@ -24,7 +24,14 @@ extern "C"
     void GlumityPlugin_printf(const char *fmt, const char *printHeaderInner, ...);
 
     /// @brief entry point of plugins, passes a handle of glumity's loaded main dll (the loader)
-    typedef void (*GlumityPlugin_EntryPoint)(HMODULE glumityInternal);
+    typedef void (*GlumityPlugin_EntryPoint)();
+
+#define GLUMITYV2_PLUGIN_ENTRY EXPORT void GlumityMain()
+
+/// @brief exit point of plugins, get's called on application termination/loader termination
+#define GLUMITYV2_PLUGIN_EXIT EXPORT void GlumityExit()
+
+    typedef void (*GlumityPlugin_ExitPoint)();
 
     // Exports of MainLoader
     typedef GlumityPluginLoader *(*GetLoaderInstance_t)();
@@ -36,7 +43,7 @@ extern "C"
 #define INIT_GLUMITYV2_EXPORT(mod, exportName, exportType) \
     (exportType) GetProcAddress(mod, exportName);
 
-    void GlumityV2Exports_Init(GlumityV2Exports *exports, HMODULE mod);
+    void GlumityV2Exports_Init(GlumityV2Exports *exports);
 
     typedef void *(*GlumityV2Dumper_GetFunctionPointer_t)(const char *, const char *);
     typedef struct

@@ -24,11 +24,16 @@ void GlumityPlugin_printf(const char *fmt, const char *printHeaderInner, ...)
     free(msg);
 }
 
-void GlumityV2Exports_Init(GlumityV2Exports *exports, HMODULE mod)
+void GlumityV2Exports_Init(GlumityV2Exports *exports)
 {
-    if (!exports || !mod)
+    if (!exports)
         return;
-
+    HMODULE mod = GetModuleHandleA(GLUMITYV2_MODULE);
+    if (!mod)
+    {
+        Glumity_printf("Failed to init GlumityV2 exports, make sure the main loader plugin is installed and loaded!\n");
+        return;
+    }
     // Init exports
     exports->GetLoaderInstance = INIT_GLUMITYV2_EXPORT(mod, "GetLoaderInstance", GetLoaderInstance_t);
 }

@@ -28,6 +28,11 @@ target("GlumityToolSuite2")
     add_files("src/MainLoader/*.c")
     add_links("user32")
 
+target("GlumityToolSuite2")
+    set_kind("static")
+    add_files("src/MainLoader/*.c")
+    add_links("user32")
+
 target("ExamplePlugin")
     set_kind("shared")
     add_files("src/ExamplePlugin/*.c")
@@ -44,6 +49,15 @@ target("001GlumityV2IL2CPPDumper")
     add_linkdirs("build")
     add_deps("GlumityLib")
     add_includedirs("src/GlumityLib")
+    set_languages("c++20")
+
+target("version")
+    set_kind("shared")
+    add_files("src/versionDllInjector/*.cpp")
+    add_links("user32")
+    add_linkdirs("build")
+    add_includedirs("src/GlumityLib")
+    add_deps("GlumityLib")
     set_languages("c++20")
 -- If you want to known more usage about xmake, please see https://xmake.io
 --

@@ -65,7 +65,8 @@ void GlumityPluginLoader_LoadAllPlugins(GlumityPluginLoader *loader)
             Glumity_printf("Loaded plugin: %s\n", dllFiles[i]);
             if (loader->plugins[i].entryPoint)
             {
-                loader->plugins[i].entryPoint(loader->thisDll);
+
+                loader->plugins[i].entryPoint();
                 continue;
             }
             Glumity_printf("Entrypoint doesn't exist in plugin!\n");
