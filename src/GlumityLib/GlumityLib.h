@@ -5,8 +5,8 @@
 #include <stdio.h>
 #include <MinHook.h>
 
-#define GLUMITYV2_DUMPER_MODULE "001GlumityV2IL2CPPDumper"
-#define GLUMITYV2_DUMPER_DLL "001GlumityV2IL2CPPDumper.dll"
+#define GLUMITYV2_DUMPER_MODULE "GlumityV2IL2CPPDumper"
+#define GLUMITYV2_DUMPER_DLL "GlumityV2IL2CPPDumper.dll"
 
 #define GLUMITYV2_MODULE "GlumityToolSuite2"
 #define GLUMITYV2_DLL "GlumityToolSuite2.dll"

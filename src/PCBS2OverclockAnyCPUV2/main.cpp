@@ -7,16 +7,27 @@
 
 GlumityV2DumperExports exports = {0};
 
+typedef bool (*BiosConfig_AllowOverclock_t)(DWORD *, const DWORD *);
+BiosConfig_AllowOverclock_t BiosConfig_AllowOverclock_o;
+bool __stdcall BiosConfig_AllowOverclock_hook(DWORD *__this, const DWORD *method)
+{
+    bool returnResult = BiosConfig_AllowOverclock_o(__this, method);
+    if (returnResult)
+        return returnResult;
+    return true;
+}
+
 typedef bool (*BiosConfig_ChangeCPUMultiplier_t)(DWORD *, int32_t, const DWORD *);
 BiosConfig_ChangeCPUMultiplier_t BiosConfig_ChangeCPUMultiplier_o;
-
 bool BiosConfig_ChangeCPUMultiplier_hook(DWORD *__this, int32_t dir, const DWORD *method)
 {
     Unity::CComponent *caller = (Unity::CComponent *)__this;
     float cpuMultiplier = caller->GetMemberValue<float>("m_cpuMultiplier");
+    
 #ifdef __DEBUG
     GlumityPlugin_printf("cpu multiplier: %d dir: %d\n", MY_PLUGIN, cpuMultiplier, dir);
 #endif
+
     if (dir == 1) // Incresase
     {
         cpuMultiplier += 0.25f;
@@ -33,6 +44,8 @@ bool BiosConfig_ChangeCPUMultiplier_hook(DWORD *__this, int32_t dir, const DWORD
 void MakeHooks()
 {
     GLUMITYV2_DUMPER_WAITFOR_INIT(exports);
+
+    // Needed if using il2cpp within hooks, can also do hooks without but limited functionality, il2cppresolver requires c++
     GLUMITYV2_PLUGIN_INIT_IL2CPP
     {
         GLUMITYV2_INIT_HOOKING(MY_PLUGIN, return)
@@ -41,7 +54,6 @@ void MakeHooks()
         }
 
         BiosConfig_ChangeCPUMultiplier_o = (BiosConfig_ChangeCPUMultiplier_t)GLUMITYV2_DUMPER_GET_GAME_FUNCTION("BiosConfig", "ChangeCPUMultiplier", exports);
-
         if (!BiosConfig_ChangeCPUMultiplier_o)
         {
             GlumityPlugin_printf("Failed to get ChangeCPUMultiplier function!\n", MY_PLUGIN);
@@ -53,6 +65,17 @@ void MakeHooks()
             BiosConfig_ChangeCPUMultiplier_o,
             BiosConfig_ChangeCPUMultiplier_hook);
 
+        BiosConfig_AllowOverclock_o = (BiosConfig_AllowOverclock_t)GLUMITYV2_DUMPER_GET_GAME_FUNCTION("BiosConfig", "AllowOverclock", exports);
+        if (!BiosConfig_AllowOverclock_o)
+        {
+            GlumityPlugin_printf("Failed to get AllowOverclock function!\n", MY_PLUGIN);
+            return;
+        }
+
+        GLUMITYV2_GAME_HOOK_CREATE(
+            "BiosConfig_AllowOverclock",
+            BiosConfig_AllowOverclock_o,
+            BiosConfig_AllowOverclock_hook);
         GLUMITYV2_GAME_HOOK_ENABLE_ALL(MY_PLUGIN);
     }
 }

@@ -55,7 +55,7 @@ target("PCBS2OverclockAnyCPUV2")
     add_includedirs("src/GlumityLib")
     add_includedirs("src/IL2CPPDumper")
 
-target("001GlumityV2IL2CPPDumper")
+target("GlumityV2IL2CPPDumper")
     set_targetdir("build/Plugins")
     set_kind("shared")
     add_files("src/IL2CPPDumper/*.cpp")
