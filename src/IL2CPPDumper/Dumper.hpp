@@ -16,20 +16,28 @@ namespace GlumityV2Dumper
         Unity::il2cppAssembly **m_gameAssemblies = nullptr;
         GlumityV2Exports m_exports = {0};
         GlumityPluginLoader *m_loader = nullptr;
+        bool m_initState = false;
 
         bool InitIL2CPPResolver()
         {
             // init IL2CPP
             if (IL2CPP::Initialize(true) && IL2CPP::Thread::Attach(IL2CPP::Domain::Get()))
             {
+                m_initState = true;
                 return true;
             }
 
+            m_initState = false;
             return false;
         }
 
     public:
         Dumper() = default;
+
+        bool GetInitState() const
+        {
+            return m_initState;
+        }
 
         void Init()
         {
@@ -53,14 +61,18 @@ namespace GlumityV2Dumper
             for (size_t i = 0; i < outSz; i++)
             {
                 auto *img = asms[i];
+                #ifdef __DEBUG
                 GlumityPlugin_printf("Found Image: %s\n", PRINT_HEAD, img->m_aName.m_pName);
+                #endif
             }
 
             IL2CPP::Class::FetchClasses(&m_gameClasses, MAIN_IMAGE, "");
             for (size_t i = 0; i < m_gameClasses.size(); i++)
             {
                 auto *c = m_gameClasses[i];
+                #ifdef __DEBUG
                 GlumityPlugin_printf("Found Class: %s | Parent Class: %p\n", PRINT_HEAD, c->m_pName, c->m_pParentClass->m_pName);
+                #endif
             }
         }
 

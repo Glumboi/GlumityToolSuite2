@@ -15,6 +15,7 @@ typedef void (*GlumityPlugin_ExitPoint)();
 typedef struct
 {
     char dllPath[DLL_PATH_MAX];
+    char *name;
     GlumityPlugin_EntryPoint entryPoint;
     GlumityPlugin_ExitPoint exitPoint;
 

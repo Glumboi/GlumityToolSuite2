@@ -16,29 +16,19 @@ bool BiosConfig_ChangeCPUMultiplier_hook(void *__this, int32_t dir, const void *
 
 void Hooks_Install(void *BiosConfig_ChangeCPUMultiplier_ptr)
 {
-    if (MH_Initialize() != MH_OK)
+    GLUMITYV2_INIT_HOOKING("Example Plugin", return)
     {
-        GlumityPlugin_printf("Failed to init minhook!\n", "Example Plugin");
-        return;
+        GlumityPlugin_printf("Initialized Minhook\n", "Example Plugin");
     }
 
     BiosConfig_ChangeCPUMultiplier_o = (BiosConfig_ChangeCPUMultiplier_t)BiosConfig_ChangeCPUMultiplier_ptr;
-    MH_STATUS stat = MH_CreateHook(
-        (LPVOID *)(BiosConfig_ChangeCPUMultiplier_o),
-        &BiosConfig_ChangeCPUMultiplier_hook,
-        (LPVOID *)&BiosConfig_ChangeCPUMultiplier_o);
+    
+    GLUMITYV2_GAME_HOOK_CREATE(
+        "BiosConfig_ChangeCPUMultiplier",
+        BiosConfig_ChangeCPUMultiplier_o,
+        BiosConfig_ChangeCPUMultiplier_hook);
 
-    if (stat != MH_OK)
-    {
-        GlumityPlugin_printf("Failed to init BiosConfig_ChangeCPUMultiplier_hook!\n", "Example Plugin");
-        return;
-    }
-
-    stat = MH_EnableHook(MH_ALL_HOOKS);
-    if (stat != MH_OK)
-    {
-        GlumityPlugin_printf("Failed to enable BiosConfig_ChangeCPUMultiplier_hook!\n", "Example Plugin");
-    }
-
-    GlumityPlugin_printf("Created and enabled BiosConfig_ChangeCPUMultiplier_hook!\n", "Example Plugin");
+    GLUMITYV2_GAME_HOOK_ENABLE(
+        "BiosConfig_ChangeCPUMultiplier",
+        BiosConfig_ChangeCPUMultiplier_o);
 }

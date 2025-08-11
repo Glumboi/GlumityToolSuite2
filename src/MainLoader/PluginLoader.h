@@ -7,6 +7,7 @@
 #include "Helpers.h"
 
 #define DEFAULT_PLUGINCAP 10 * sizeof(GlumityPlugin)
+
 #define PLUGINS_PATH "./Plugins"
 
 typedef struct

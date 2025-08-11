@@ -30,7 +30,8 @@ BOOL WINAPI DllMain(
     case DLL_PROCESS_ATTACH:
         // main();
         hThread = CreateThread(0, 0, (LPTHREAD_START_ROUTINE)main, 0, 0, 0);
-        CloseHandle(hThread);
+        if (hThread)
+            CloseHandle(hThread);
         break;
     case DLL_THREAD_ATTACH:
         break;

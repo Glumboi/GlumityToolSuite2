@@ -1,7 +1,7 @@
 #ifndef EXPORTS_H
 #define EXPORTS_H
 
-#include "PluginLoader.h";
+#include "PluginLoader.h"
 
 #define EXPORT __declspec(dllexport)
 

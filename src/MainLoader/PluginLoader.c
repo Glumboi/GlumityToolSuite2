@@ -58,14 +58,13 @@ void GlumityPluginLoader_LoadAllPlugins(GlumityPluginLoader *loader)
     {
         if (!GlumityPluginLoader_LoadPlugin(loader, dllFiles[i]))
         {
-            Glumity_printf("Failed to load plugin: %s\n", dllFiles[i]);
+            Glumity_printf("Failed to load plugin: %s\n", loader->plugins[i].name);
         }
         else
         {
-            Glumity_printf("Loaded plugin: %s\n", dllFiles[i]);
+            Glumity_printf("Loaded plugin: %s\n", loader->plugins[i].name);
             if (loader->plugins[i].entryPoint)
             {
-
                 loader->plugins[i].entryPoint();
                 continue;
             }

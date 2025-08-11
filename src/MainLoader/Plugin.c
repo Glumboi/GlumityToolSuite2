@@ -1,4 +1,5 @@
 #include "Plugin.h"
+#include "Helpers.h"
 
 GlumityPlugin GlumityPlugin_LoadPlugin(const char *dllPath)
 {
@@ -13,6 +14,8 @@ GlumityPlugin GlumityPlugin_LoadPlugin(const char *dllPath)
         return ret;
 
     memcpy(ret.dllPath, dllPath, DLL_PATH_MAX);
+
+    ret.name = Glumity_GetFileNameFromPath(ret.dllPath);
 
     ret.hDll = LoadLibraryA(ret.dllPath);
     if (ret.hDll)

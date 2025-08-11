@@ -3,6 +3,7 @@
 
 #include <windows.h>
 #include <stdio.h>
+#include <MinHook.h>
 
 #define GLUMITYV2_DUMPER_MODULE "001GlumityV2IL2CPPDumper"
 #define GLUMITYV2_DUMPER_DLL "001GlumityV2IL2CPPDumper.dll"
@@ -46,13 +47,60 @@ extern "C"
     void GlumityV2Exports_Init(GlumityV2Exports *exports);
 
     typedef void *(*GlumityV2Dumper_GetFunctionPointer_t)(const char *, const char *);
+    typedef void (*GlumityV2Dumper_WaitForDumper_t)();
     typedef struct
     {
         GlumityV2Dumper_GetFunctionPointer_t GlumityV2Dumper_GetFunctionPointer;
+        GlumityV2Dumper_WaitForDumper_t GlumityV2Dumper_WaitForDumper;
     } GlumityV2DumperExports;
 
     // Only works if dumper plugin is loaded
     void GlumityV2DumperExports_Init(GlumityV2DumperExports *dumperExports);
+
+#define GLUMITYV2_INIT_HOOKING(pluginName, onFail)                           \
+    if (MH_Initialize() != MH_OK)                                            \
+    {                                                                        \
+        GlumityPlugin_printf("Failed to initialize Minhook!\n", pluginName); \
+        onFail;                                                              \
+    }                                                                        \
+    else
+
+#define GLUMITYV2_GAME_HOOK_CREATE(name, original, hook)  \
+    {                                                     \
+        MH_STATUS stat = MH_CreateHook(                   \
+            (LPVOID *)(original),                         \
+            &hook,                                        \
+            (LPVOID *)&original);                         \
+        if (stat)                                         \
+            Glumity_printf("Created a hook: %s\n", name); \
+    }
+
+#define GLUMITYV2_GAME_HOOK_ENABLE(name, original)        \
+    {                                                     \
+        MH_STATUS stat = MH_EnableHook((LPVOID)original); \
+        if (stat)                                         \
+            Glumity_printf("Enabled a hook: %s\n", name); \
+    }
+
+// Recommended to use this to run most code,
+// specially function hooking since you have to rely on the dumper being loaded
+#define GLUMITYV2_PLUGIN_THREADRUN(function, pParam)                                     \
+    HANDLE hThread = CreateThread(0, 0, (LPTHREAD_START_ROUTINE)function, pParam, 0, 0); \
+    if (hThread)                                                                         \
+        CloseHandle(hThread);
+
+#define GLUMITYV2_DUMPER_WAITFOR_INIT(dumperExports)   \
+    if (!dumperExports.GlumityV2Dumper_WaitForDumper)  \
+    {                                                  \
+        GlumityV2DumperExports_Init(&dumperExports);   \
+    }                                                  \
+    if (dumperExports.GlumityV2Dumper_WaitForDumper)   \
+    {                                                  \
+        dumperExports.GlumityV2Dumper_WaitForDumper(); \
+    }
+
+#define GLUMITYV2_DUMPER_GET_GAME_FUNCTION(className, functionName, dumperExports) \
+    dumperExports.GlumityV2Dumper_GetFunctionPointer(className, functionName);
 
 #ifdef __cplusplus
 }

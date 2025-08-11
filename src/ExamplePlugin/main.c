@@ -5,19 +5,23 @@
 
 GlumityV2DumperExports dumperExports;
 
-GLUMITYV2_PLUGIN_ENTRY
+void MakeHooks()
 {
-    GlumityV2DumperExports_Init(&dumperExports);
-    if (dumperExports.GlumityV2Dumper_GetFunctionPointer)
-    {
-        GlumityPlugin_printf("Found GlumityV2Dumper_GetFunctionPointer!\n", "Example Plugin");
-    }
-    void *ChangeCPUMultiplierPtr = dumperExports.GlumityV2Dumper_GetFunctionPointer("BiosConfig", "ChangeCPUMultiplier");
+    // Wait for dumper to finish initializing, crucial to avoid crashes
+    GLUMITYV2_DUMPER_WAITFOR_INIT(dumperExports);
+    void *ChangeCPUMultiplierPtr =
+        GLUMITYV2_DUMPER_GET_GAME_FUNCTION("BiosConfig", "ChangeCPUMultiplier", dumperExports);
+
     if (ChangeCPUMultiplierPtr)
     {
         // Make a hook
         Hooks_Install(ChangeCPUMultiplierPtr);
     }
+}
+
+GLUMITYV2_PLUGIN_ENTRY
+{
+    GLUMITYV2_PLUGIN_THREADRUN(MakeHooks, 0);
 }
 
 GLUMITYV2_PLUGIN_EXIT
