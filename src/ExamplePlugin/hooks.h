@@ -22,13 +22,11 @@ void Hooks_Install(void *BiosConfig_ChangeCPUMultiplier_ptr)
     }
 
     BiosConfig_ChangeCPUMultiplier_o = (BiosConfig_ChangeCPUMultiplier_t)BiosConfig_ChangeCPUMultiplier_ptr;
-    
+
     GLUMITYV2_GAME_HOOK_CREATE(
         "BiosConfig_ChangeCPUMultiplier",
         BiosConfig_ChangeCPUMultiplier_o,
         BiosConfig_ChangeCPUMultiplier_hook);
 
-    GLUMITYV2_GAME_HOOK_ENABLE(
-        "BiosConfig_ChangeCPUMultiplier",
-        BiosConfig_ChangeCPUMultiplier_o);
+    GLUMITYV2_GAME_HOOK_ENABLE_ALL("Example Plugin");
 }

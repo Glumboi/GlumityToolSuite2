@@ -19,8 +19,8 @@ EXPORT void *GlumityV2Dumper_GetFunctionPointer(const char *className, const cha
     GlumityPlugin_printf("Looking for function [%s] in class [%s]\n", PRINT_HEAD, functionName, className);
     auto ret = IL2CPP::Class::Utils::GetMethodPointer(className, functionName);
     if (!ret)
-        GlumityPlugin_printf("Not found!\n", PRINT_HEAD, functionName, className);
     {
+        GlumityPlugin_printf("Not found!\n", PRINT_HEAD, functionName, className);
         return ret;
     }
     GlumityPlugin_printf("Found!\n", PRINT_HEAD, functionName, className);

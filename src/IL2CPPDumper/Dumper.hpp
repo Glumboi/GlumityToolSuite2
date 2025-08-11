@@ -61,18 +61,18 @@ namespace GlumityV2Dumper
             for (size_t i = 0; i < outSz; i++)
             {
                 auto *img = asms[i];
-                #ifdef __DEBUG
+#ifdef __DEBUG
                 GlumityPlugin_printf("Found Image: %s\n", PRINT_HEAD, img->m_aName.m_pName);
-                #endif
+#endif
             }
 
             IL2CPP::Class::FetchClasses(&m_gameClasses, MAIN_IMAGE, "");
             for (size_t i = 0; i < m_gameClasses.size(); i++)
             {
                 auto *c = m_gameClasses[i];
-                #ifdef __DEBUG
-                GlumityPlugin_printf("Found Class: %s | Parent Class: %p\n", PRINT_HEAD, c->m_pName, c->m_pParentClass->m_pName);
-                #endif
+#ifdef __DEBUG
+                GlumityPlugin_printf("Found Class: %s | Parent Class: %s\n", PRINT_HEAD, c->m_pName, c->m_pParentClass->m_pName);
+#endif
             }
         }
 

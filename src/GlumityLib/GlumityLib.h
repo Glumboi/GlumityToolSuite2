@@ -71,14 +71,21 @@ extern "C"
             (LPVOID *)(original),                         \
             &hook,                                        \
             (LPVOID *)&original);                         \
-        if (stat)                                         \
+        if (stat == MH_OK)                                \
             Glumity_printf("Created a hook: %s\n", name); \
+    }
+
+#define GLUMITYV2_GAME_HOOK_ENABLE_ALL(pluginName)                    \
+    {                                                                 \
+        MH_STATUS stat = MH_EnableHook(MH_ALL_HOOKS);                 \
+        if (stat == MH_OK)                                            \
+            GlumityPlugin_printf("Enabled all hooks!\n", pluginName); \
     }
 
 #define GLUMITYV2_GAME_HOOK_ENABLE(name, original)        \
     {                                                     \
-        MH_STATUS stat = MH_EnableHook((LPVOID)original); \
-        if (stat)                                         \
+        MH_STATUS stat = MH_EnableHook(original);         \
+        if (stat == MH_OK)                                \
             Glumity_printf("Enabled a hook: %s\n", name); \
     }
 
@@ -101,6 +108,9 @@ extern "C"
 
 #define GLUMITYV2_DUMPER_GET_GAME_FUNCTION(className, functionName, dumperExports) \
     dumperExports.GlumityV2Dumper_GetFunctionPointer(className, functionName);
+
+#define GLUMITYV2_PLUGIN_INIT_IL2CPP \
+    if (IL2CPP::Initialize(true) && IL2CPP::Thread::Attach(IL2CPP::Domain::Get()))
 
 #ifdef __cplusplus
 }
