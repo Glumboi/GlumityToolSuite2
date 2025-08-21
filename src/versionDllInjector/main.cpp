@@ -2,6 +2,8 @@
 #include "exports.h"
 #include <GlumityLib.h>
 
+#define DELAY_TIME 5000
+
 void Main()
 {
     // Check if we are already running
@@ -13,6 +15,9 @@ void Main()
         return;
     }
     // Load modloader
+
+    // Wait some time to avoid threading issues
+    Sleep(DELAY_TIME);
     LoadLibraryA(GLUMITYV2_DLL);
 }
 

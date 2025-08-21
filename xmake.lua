@@ -3,6 +3,7 @@ add_rules("mode.debug", "mode.release")
 set_runtimes("MD") -- Use MD for release, MDd for debug
 
 add_requires("minhook")
+add_requires("lua")
 
 target("GlumityLib")
 --  after_build(
@@ -17,7 +18,6 @@ target("GlumityLib")
     add_files("src/GlumityLib/*.c")
     add_files("src/MainLoader/*.c")
     add_links("user32")
-   
 
 target("ExeTest")
     set_kind("binary")
@@ -26,11 +26,7 @@ target("ExeTest")
 
 target("GlumityToolSuite2")
     set_kind("shared")
-    add_files("src/MainLoader/*.c")
-    add_links("user32")
-
-target("GlumityToolSuite2")
-    set_kind("static")
+    add_deps("GlumityLib")
     add_files("src/MainLoader/*.c")
     add_links("user32")
 
@@ -52,6 +48,18 @@ target("PCBS2OverclockAnyCPUV2")
     add_linkdirs("build")
     add_deps("GlumityLib")
     add_packages("minhook")
+    add_includedirs("src/GlumityLib")
+    add_includedirs("src/IL2CPPDumper")
+
+target("GlumityV2LuaAPI")
+    set_targetdir("build/Plugins")
+    set_kind("shared")
+    add_files("src/LuaAPI/*.c")
+    add_links("user32")
+    add_linkdirs("build")
+    add_deps("GlumityLib")
+    add_packages("minhook")
+    add_packages("lua")
     add_includedirs("src/GlumityLib")
     add_includedirs("src/IL2CPPDumper")
 

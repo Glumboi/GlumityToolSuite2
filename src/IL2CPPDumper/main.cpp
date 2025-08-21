@@ -1,4 +1,5 @@
 #include <GlumityLib.h>
+#include <sstream>
 #include "Dumper.hpp"
 
 #define PRINT_HEAD "GlumityV2IL2CPPDumper"
