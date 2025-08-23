@@ -2,7 +2,6 @@
 #define HELPERS_H
 
 #include <windows.h>
-#include "PluginLoader.h"
 
 #ifdef __cplusplus
 #define EXPORT extern "C" __declspec(dllexport)

@@ -6,7 +6,8 @@ GlumityPluginLoader GlumityPluginLoader_Create()
         .plugins = NULL,
         .pluginsCap = DEFAULT_PLUGINCAP,
         .pluginsCount = 0,
-        .thisDll = NULL};
+        .thisDll = NULL,
+        .blockList = {0}};
     memset(ret.pluginsPath, 0, DLL_PATH_MAX);
 
     ret.plugins = (GlumityPlugin *)malloc(ret.pluginsCap * sizeof(GlumityPlugin));
@@ -20,6 +21,7 @@ GlumityPluginLoader GlumityPluginLoader_Create()
     strncpy(ret.pluginsPath, PLUGINS_PATH, DLL_PATH_MAX - 1);
 
     ret.thisDll = GetModuleHandleA("GlumityToolSuite2");
+    ret.blockList = PluginBlockList_Load();
 
     return ret;
 }
@@ -56,13 +58,12 @@ void GlumityPluginLoader_LoadAllPlugins(GlumityPluginLoader *loader)
 
     for (size_t i = 0; i < cnt; i++)
     {
-        if (!GlumityPluginLoader_LoadPlugin(loader, dllFiles[i]))
-        {
-            Glumity_printf("Failed to load plugin: %s\n", loader->plugins[i].name);
-        }
+        if (PluginBlockList_IsInList(&loader->blockList, dllFiles[i]) ||
+            !GlumityPluginLoader_LoadPlugin(loader, dllFiles[i]))
+            continue;
         else
         {
-            Glumity_printf("Loaded plugin: %s\n", loader->plugins[i].name);
+            Glumity_printf("Loaded plugin: %s\n", dllFiles[i]);
             if (loader->plugins[i].entryPoint)
             {
                 loader->plugins[i].entryPoint();
@@ -100,6 +101,8 @@ void GlumityPluginLoader_Destroy(GlumityPluginLoader *loader)
     loader->pluginsCap = 0;
     free(loader->plugins);
     loader->plugins = NULL;
+
+    PluginBlockList_Unload(&loader->blockList);
 }
 
 void GlumityPluginLoader_KeyboardRun(GlumityPluginLoader *loader)

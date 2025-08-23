@@ -7,7 +7,7 @@
 
 GlumityV2DumperExports exports = {0};
 
-typedef bool (*BiosConfig_AllowOverclock_t)(DWORD *, const DWORD *);
+GLUMITYV2_GAME_HOOK_TYPE(bool, BiosConfig_AllowOverclock_t)(DWORD *, const DWORD *);
 BiosConfig_AllowOverclock_t BiosConfig_AllowOverclock_o;
 bool __stdcall BiosConfig_AllowOverclock_hook(DWORD *__this, const DWORD *method)
 {
@@ -17,13 +17,13 @@ bool __stdcall BiosConfig_AllowOverclock_hook(DWORD *__this, const DWORD *method
     return true;
 }
 
-typedef bool (*BiosConfig_ChangeCPUMultiplier_t)(DWORD *, int32_t, const DWORD *);
+GLUMITYV2_GAME_HOOK_TYPE(bool, BiosConfig_ChangeCPUMultiplier_t)(DWORD *, int32_t, const DWORD *);
 BiosConfig_ChangeCPUMultiplier_t BiosConfig_ChangeCPUMultiplier_o;
 bool BiosConfig_ChangeCPUMultiplier_hook(DWORD *__this, int32_t dir, const DWORD *method)
 {
     Unity::CComponent *caller = (Unity::CComponent *)__this;
     float cpuMultiplier = caller->GetMemberValue<float>("m_cpuMultiplier");
-    
+
 #ifdef __DEBUG
     GlumityPlugin_printf("cpu multiplier: %d dir: %d\n", MY_PLUGIN, cpuMultiplier, dir);
 #endif

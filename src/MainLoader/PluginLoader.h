@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include "Plugin.h"
 #include "Helpers.h"
+#include "ConfigFile.h"
 
 #define DEFAULT_PLUGINCAP 10 * sizeof(GlumityPlugin)
 
@@ -13,6 +14,7 @@
 typedef struct
 {
     GlumityPlugin *plugins;
+    PluginBlockList blockList;
 
     char pluginsPath[DLL_PATH_MAX];
     size_t pluginsCap;
