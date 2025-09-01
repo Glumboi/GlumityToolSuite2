@@ -1,7 +1,7 @@
 #include <GlumityLib.h>
 #include <stdbool.h>
 
-#include <IL2CPPResolver/IL2CPP_Resolver.hpp>
+#include <IL2CPP_Resolver.hpp>
 
 #define MY_PLUGIN "PCBS2OverclockAnyCPUV2"
 

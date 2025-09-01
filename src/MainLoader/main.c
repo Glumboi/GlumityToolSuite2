@@ -7,14 +7,18 @@
 
 int main()
 {
-    if (AllocConsole())
+    globalLoader = GlumityPluginLoader_Create();
+    if (globalLoader.config.useConsole && AllocConsole())
         freopen("CONOUT$", "w", stdout);
-
     SetConsoleOutputCP(CP_UTF8);
     Glumity_printf("Console initialized, loading plugins...\n");
-
-    globalLoader = GlumityPluginLoader_Create();
     GlumityPluginLoader_LoadAllPlugins(&globalLoader);
+
+    /*
+        HANDLE hThread = CreateThread(0, 0, (LPTHREAD_START_ROUTINE)GlumityPluginLoader_KeyboardRun, &globalLoader, 0, 0);
+        if (hThread)
+            CloseHandle(hThread);
+    */
     return 0;
 }
 

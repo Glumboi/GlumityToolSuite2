@@ -1,55 +1,47 @@
 #include "ConfigFile.h"
 
-PluginBlockList PluginBlockList_Load()
+GlumityV2Config GlumityV2Config_Load()
 {
-    PluginBlockList ret = {0};
-    FILE *f = fopen(BLOCKLIST_FILE, "r");
-    if (!f)
-        return ret;
+    GlumityV2Config ret = GLUMITYV2_CONFIG_DEFAULT;
 
-    char line[64];
+    FILE *f = fopen(GLUMITYV2_CONFIG_PATH, "r");
+    if (!f) // File does not exist, create default
+    {
+        f = fopen(GLUMITYV2_CONFIG_PATH, "w");
+        if (f)
+        {
+            fprintf(f, "useConsole=%d\n", ret.useConsole);
+            fprintf(f, "pluginsPath=%s\n", ret.pluginsPath);
+            fclose(f);
+        }
+        return ret;
+    }
+
+    char line[256];
     while (fgets(line, sizeof(line), f))
     {
-        // trim new line
-        line[strcspn(line, "\n")] = 0;
+        char key[128];
+        char value[128];
 
-        void *temp = realloc(ret.blockedPlugins, (ret.blockedCount + 1) * sizeof(char *));
-        if (temp)
-            ret.blockedPlugins = temp;
-        ret.blockedPlugins[ret.blockedCount++] = strdup(line);
+        if (sscanf(line, "%127[^=]=%127s", key, value) == 2)
+        {
+            if (strcmp(key, "useConsole") == 0)
+            {
+                ret.useConsole = atoi(value);
+                continue;
+            }
 
-        Glumity_printf("Blocked plugin: %s\n", ret.blockedPlugins[ret.blockedCount - 1]);
+            if (strcmp(key, "pluginsPath") == 0)
+            {
+                strcpy(ret.pluginsPath, value);
+                continue;
+            }
+            // Add more keys here if needed in the future
+        }
     }
+
     fclose(f);
     return ret;
 }
 
-void PluginBlockList_Unload(PluginBlockList *blockList)
-{
-    if (!blockList)
-        return;
-    for (size_t i = 0; i < blockList->blockedCount; i++)
-    {
-        free(blockList->blockedPlugins[i]);
-    }
 
-    blockList->blockedCount = 0;
-    free(blockList->blockedPlugins);
-    blockList->blockedPlugins = NULL;
-}
-
-bool PluginBlockList_IsInList(PluginBlockList *blockList, char *target)
-{
-    if (!blockList || !target)
-        return false;
-
-    char *targetName = Glumity_GetFileNameFromPath(target);
-
-    for (size_t i = 0; i < blockList->blockedCount; i++)
-    {
-        if (strcmp(blockList->blockedPlugins[i], targetName) == 0)
-            return true;
-    }
-
-    return false;
-}

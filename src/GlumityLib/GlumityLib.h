@@ -89,7 +89,7 @@ extern "C"
             Glumity_printf("Enabled a hook: %s\n", name); \
     }
 
-#define GLUMITYV2_GAME_HOOK_TYPE(retType, name) typedef retType (*name)
+#define GLUMITYV2_GAME_HOOK_TYPE(retType, name) typedef retType(*name)
 
 // Recommended to use this to run most code,
 // specially function hooking since you have to rely on the dumper being loaded

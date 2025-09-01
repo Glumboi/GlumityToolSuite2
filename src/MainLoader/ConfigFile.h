@@ -4,19 +4,23 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <string.h>
 
 #include "Helpers.h"
 
-#define BLOCKLIST_FILE "./GlumityV2BlockList.txt"
+// TODO: W.I.P
+
+#define GLUMITYV2_CONFIG_PATH "./GlumityV2.cfg"
 
 typedef struct
 {
-    char** blockedPlugins;
-    size_t blockedCount;
-} PluginBlockList;
+    bool useConsole;
+    char pluginsPath[MAX_PATH];
+} GlumityV2Config;
 
-PluginBlockList PluginBlockList_Load();
-void PluginBlockList_Unload(PluginBlockList* blockList);
-bool PluginBlockList_IsInList(PluginBlockList* blockList, char* target);
+GlumityV2Config GlumityV2Config_Load();
+
+#define GLUMITYV2_CONFIG_DEFAULT \
+    (GlumityV2Config){.useConsole = true, .pluginsPath = "./Plugins"}
 
 #endif

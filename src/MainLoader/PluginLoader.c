@@ -6,23 +6,18 @@ GlumityPluginLoader GlumityPluginLoader_Create()
         .plugins = NULL,
         .pluginsCap = DEFAULT_PLUGINCAP,
         .pluginsCount = 0,
-        .thisDll = NULL,
-        .blockList = {0}};
-    memset(ret.pluginsPath, 0, DLL_PATH_MAX);
+        .thisDll = NULL};
 
+    ret.config = GlumityV2Config_Load();
+    CreateDirectoryA(ret.config.pluginsPath, NULL);
+
+    ret.thisDll = GetModuleHandleA("GlumityToolSuite2");
     ret.plugins = (GlumityPlugin *)malloc(ret.pluginsCap * sizeof(GlumityPlugin));
     if (!ret.plugins)
     {
         ret.pluginsCap = 0;
         return ret;
     }
-
-    CreateDirectoryA(PLUGINS_PATH, NULL);
-    strncpy(ret.pluginsPath, PLUGINS_PATH, DLL_PATH_MAX - 1);
-
-    ret.thisDll = GetModuleHandleA("GlumityToolSuite2");
-    ret.blockList = PluginBlockList_Load();
-
     return ret;
 }
 
@@ -47,21 +42,18 @@ uint8_t GlumityPluginLoader_LoadPlugin(GlumityPluginLoader *loader, const char *
 
 void GlumityPluginLoader_LoadAllPlugins(GlumityPluginLoader *loader)
 {
-    if (!loader || loader->pluginsPath[0] == '\0')
+    if (!loader || loader->config.pluginsPath[0] == '\0')
         return;
 
     int cnt = 0;
-    char **dllFiles = Glumity_FileSystem_GetAllDllFilesFromDirectory(loader->pluginsPath, &cnt);
+    char **dllFiles = Glumity_FileSystem_GetAllDllFilesFromDirectory(loader->config.pluginsPath, &cnt);
 
     if (!dllFiles)
         return;
 
     for (size_t i = 0; i < cnt; i++)
     {
-        if (PluginBlockList_IsInList(&loader->blockList, dllFiles[i]) ||
-            !GlumityPluginLoader_LoadPlugin(loader, dllFiles[i]))
-            continue;
-        else
+        if (GlumityPluginLoader_LoadPlugin(loader, dllFiles[i]))
         {
             Glumity_printf("Loaded plugin: %s\n", dllFiles[i]);
             if (loader->plugins[i].entryPoint)
@@ -72,7 +64,6 @@ void GlumityPluginLoader_LoadAllPlugins(GlumityPluginLoader *loader)
             Glumity_printf("Entrypoint doesn't exist in plugin!\n");
         }
     }
-
     free(dllFiles);
 }
 
@@ -101,12 +92,12 @@ void GlumityPluginLoader_Destroy(GlumityPluginLoader *loader)
     loader->pluginsCap = 0;
     free(loader->plugins);
     loader->plugins = NULL;
-
-    PluginBlockList_Unload(&loader->blockList);
 }
 
 void GlumityPluginLoader_KeyboardRun(GlumityPluginLoader *loader)
 {
+    Glumity_printf("Started keyboard loop, press F9 to reload all plugins!\n");
+
     while (1)
     {
         if (GetAsyncKeyState(VK_F9) & 0x8000)

@@ -13,6 +13,8 @@
 
 #include "defines.h"
 
+#define PLUGINS_PATH "./Plugins"
+
 #define SCRIPTS_DIRNAME "Scripts"
 
 typedef struct

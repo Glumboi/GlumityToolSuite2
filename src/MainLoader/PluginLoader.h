@@ -9,14 +9,11 @@
 
 #define DEFAULT_PLUGINCAP 10 * sizeof(GlumityPlugin)
 
-#define PLUGINS_PATH "./Plugins"
-
 typedef struct
 {
     GlumityPlugin *plugins;
-    PluginBlockList blockList;
+    GlumityV2Config config;
 
-    char pluginsPath[DLL_PATH_MAX];
     size_t pluginsCap;
     size_t pluginsCount;
 
