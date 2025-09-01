@@ -10,17 +10,23 @@ import "exports"
 import "helpers"
 
 setup :: proc() {
+
 	cfg := config.loaderConfig_init("glumityv2conf.ini")
+	defer config.loaderConfig_unload(&cfg)
 
 	if cfg.useConsole && helpers.init_console() {
 		exports.Glumity_printf("Initialized console...\n")
+	}
+
+	for blocked in cfg.blockList {
+		exports.Glumity_printf("blocked dll: %s\n", strings.unsafe_string_to_cstring(blocked))
 	}
 
 	pluginLoader := dllLoader.dllLoader_create()
 	exports.bind_global_loader(&pluginLoader)
 	defer dllLoader.dllLoader_dispose(&pluginLoader)
 
-	dllLoader.dllLoader_getDllsToLoad(&pluginLoader, "./Plugins")
+	dllLoader.dllLoader_getDllsToLoad(&pluginLoader, "./Plugins", cfg.blockList)
 	dllLoader.dllLoader_loadDlls(&pluginLoader)
 
 	exports.Glumity_printf("Loaded dlls: \n")

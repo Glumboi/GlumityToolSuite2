@@ -8,11 +8,12 @@ import "core:strconv"
 import "core:strings"
 
 @(private)
-DEFAULT_CONFIG: string : "[config]\nuseConsole=1\n"
+DEFAULT_CONFIG: string : "[config]\nuseConsole=1\nblockList=\n"
 
 loaderConfig :: struct {
 	cfg:        ini.Map,
 	useConsole: bool,
+	blockList:  []string,
 }
 
 loaderConfig_init :: proc(path: string) -> loaderConfig {
@@ -41,6 +42,7 @@ loaderConfig_init :: proc(path: string) -> loaderConfig {
 			strings.unsafe_string_to_cstring(path),
 		)
 	}
+
 	err: runtime.Allocator_Error
 	returnVal.cfg, err = ini.load_map_from_string(transmute(string)fileData, context.allocator)
 
@@ -51,5 +53,17 @@ loaderConfig_init :: proc(path: string) -> loaderConfig {
 
 	exports.Glumity_printf("Config!\n")
 	returnVal.useConsole, _ = strconv.parse_bool(returnVal.cfg["config"]["useConsole"])
+    // TODO: fix split only splitting last occurance
+	returnVal.blockList, err = strings.split(returnVal.cfg["config"]["blockList"], ",")
+
+	if err != nil {
+		exports.Glumity_printf("Error in reading blocklist from config!\n")
+	}
+
 	return returnVal
+}
+
+loaderConfig_unload :: proc(loader: ^loaderConfig) {
+	if loader == nil {return}
+	delete(loader.blockList)
 }

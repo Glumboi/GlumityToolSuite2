@@ -21,7 +21,11 @@ dllLoader_create :: proc() -> dllLoader {
 	}
 }
 
-dllLoader_getDllsToLoad :: proc(loader: ^dllLoader, locationToSearch: string) {
+dllLoader_getDllsToLoad :: proc(
+	loader: ^dllLoader,
+	locationToSearch: string,
+	blockList: []string,
+) {
 	if loader == nil {return}
 
 	if !os.exists(locationToSearch) || !os.is_dir(locationToSearch) {
@@ -58,9 +62,18 @@ dllLoader_getDllsToLoad :: proc(loader: ^dllLoader, locationToSearch: string) {
 		return
 	}
 
+
 	for &file in files {
 		// TODO: Implement blocking the loading of dlls via config file
+
 		if helpers.has_file_extension(&file, ".dll") {
+			if helpers.is_in_slice([]string, blockList, file.name) {
+				exports.Glumity_printf(
+					"Didn't load dll: %s\n",
+					strings.unsafe_string_to_cstring(file.name),
+				)
+				continue
+			}
 			loader.dllsToLoad[file.fullpath] = true
 		}
 	}
