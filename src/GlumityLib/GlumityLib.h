@@ -27,7 +27,8 @@ extern "C"
     /// @brief entry point of plugins, passes a handle of glumity's loaded main dll (the loader)
     typedef void (*GlumityPlugin_EntryPoint)();
 
-#define GLUMITYV2_PLUGIN_ENTRY EXPORT void GlumityMain()
+#define GLUMITYV2_PLUGIN_ENTRY \
+    EXPORT void GlumityMain()
 
 /// @brief exit point of plugins, get's called on application termination/loader termination
 #define GLUMITYV2_PLUGIN_EXIT EXPORT void GlumityExit()
@@ -36,6 +37,7 @@ extern "C"
 
     // Exports of MainLoader
     typedef GlumityPluginLoader *(*GetLoaderInstance_t)();
+
     typedef struct
     {
         GetLoaderInstance_t GetLoaderInstance;
@@ -91,9 +93,10 @@ extern "C"
 
 #define GLUMITYV2_GAME_HOOK_TYPE(retType, name) typedef retType(*name)
 
-// Recommended to use this to run most code,
-// specially function hooking since you have to rely on the dumper being loaded
+    // Recommended to use this to run most code,
+    // specially function hooking since you have to rely on the dumper being loaded
 #define GLUMITYV2_PLUGIN_THREADRUN(function, pParam)                                     \
+    freopen("CONOUT$", "w", stdout); /* enable plugin printing */                        \
     HANDLE hThread = CreateThread(0, 0, (LPTHREAD_START_ROUTINE)function, pParam, 0, 0); \
     if (hThread)                                                                         \
         CloseHandle(hThread);

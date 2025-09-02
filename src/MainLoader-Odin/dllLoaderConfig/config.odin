@@ -9,18 +9,17 @@ import "core:strconv"
 import "core:strings"
 
 @(private)
-DEFAULT_CONFIG: string : "[config]\nuseConsole=1\nblockList=\n"
+DEFAULT_CONFIG: string : "[config]\npluginPath=./Plugins\nuseConsole=1\nblockList=\n"
 
 loaderConfig :: struct {
 	cfg:        ini.Map,
+	pluginPath: string,
 	useConsole: bool,
 	blockList:  []string,
 }
 
 loaderConfig_init :: proc(path: string) -> loaderConfig {
-	returnVal: loaderConfig = {
-		useConsole = true,
-	}
+	returnVal: loaderConfig = {}
 
 	if !os.exists(path) {
 		if !os.write_entire_file(path, transmute([]u8)DEFAULT_CONFIG) {
@@ -55,6 +54,7 @@ loaderConfig_init :: proc(path: string) -> loaderConfig {
 	exports.Glumity_printf("Config!\n")
 	returnVal.useConsole, _ = strconv.parse_bool(returnVal.cfg["config"]["useConsole"])
 	returnVal.blockList = strings.split(returnVal.cfg["config"]["blockList"], ",")
+	returnVal.pluginPath = returnVal.cfg["config"]["pluginPath"]
 
 	if err != nil {
 		exports.Glumity_printf("Error in reading blocklist from config!\n")
@@ -65,5 +65,6 @@ loaderConfig_init :: proc(path: string) -> loaderConfig {
 
 loaderConfig_unload :: proc(loader: ^loaderConfig) {
 	if loader == nil {return}
+	ini.delete_map(loader.cfg)
 	delete(loader.blockList)
 }

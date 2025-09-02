@@ -9,6 +9,9 @@ import "core:sys/windows"
 
 dllLoader_generic_function :: distinct proc()
 
+GLUMITY_ENTRY :: "GlumityMain"
+GLUMITY_EXIT :: "GlumityExit"
+
 dllLoader :: struct {
 	loadedDlls: [dynamic]windows.HMODULE,
 	dllsToLoad: map[string]bool,
@@ -29,10 +32,6 @@ dllLoader_getDllsToLoad :: proc(
 	if loader == nil {return}
 
 	if !os.exists(locationToSearch) || !os.is_dir(locationToSearch) {
-		exports.Glumity_printf(
-			"Directory %s does not exist, creating it...\n",
-			strings.unsafe_string_to_cstring(locationToSearch),
-		)
 		os.make_directory(locationToSearch)
 		return
 	}
@@ -95,14 +94,9 @@ dllLoader_loadDlls :: proc(loader: ^dllLoader) {
 	}
 }
 
-dllLoader_call_exported_from_dlls :: proc(
-	loader: ^dllLoader,
-	exportToCall: string,
-) -> (
-	success: bool,
-) {
+dllLoader_call_exported_from_dlls :: proc(loader: ^dllLoader, exportToCall: string) {
 	if loader == nil {
-		return false
+		return
 	}
 
 	for dll in loader.loadedDlls {
@@ -113,12 +107,16 @@ dllLoader_call_exported_from_dlls :: proc(
 
 		dllLoader_generic_function(procAdd)()
 	}
-
-	return true
 }
 
 dllLoader_dispose :: proc(loader: ^dllLoader) {
 	if loader == nil {return}
+	dllLoader_call_exported_from_dlls(loader, GLUMITY_EXIT)
+
+	for hModule in loader.loadedDlls {
+		windows.FreeLibrary(hModule)
+	}
+
 	delete_dynamic_array(loader.loadedDlls)
 	delete_map(loader.dllsToLoad)
 }
