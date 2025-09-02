@@ -15,7 +15,6 @@ namespace GlumityV2Dumper
         std::vector<Unity::il2cppClass *> m_gameClasses;
         Unity::il2cppAssembly **m_gameAssemblies = nullptr;
         Unity::il2cppAssembly *m_gameMainAssembly = nullptr;
-        GlumityV2Exports m_exports = {0};
         GlumityPluginLoader *m_loader = nullptr;
         bool m_initState = false;
 
@@ -49,13 +48,6 @@ namespace GlumityV2Dumper
                 return;
             }
             GlumityPlugin_printf("Initialized IL2CPP!\n", PRINT_HEAD);
-
-            GlumityPlugin_printf("Initializing GlumityV2Exports...\n", PRINT_HEAD);
-            GlumityV2Exports_Init(&m_exports);
-            GlumityPlugin_printf("Initialized GlumityV2Exports!\n", PRINT_HEAD);
-
-            m_loader = m_exports.GetLoaderInstance();
-            GlumityPlugin_printf("GlumityV2 PluginLoader: %p\n", PRINT_HEAD, m_loader);
 
             size_t outSz = 0;
             m_gameAssemblies = IL2CPP::Domain::GetAssemblies(&outSz);

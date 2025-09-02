@@ -30,23 +30,14 @@ extern "C"
 #define GLUMITYV2_PLUGIN_ENTRY \
     EXPORT void GlumityMain()
 
-/// @brief exit point of plugins, get's called on application termination/loader termination
-#define GLUMITYV2_PLUGIN_EXIT EXPORT void GlumityExit()
-
+    /// @brief exit point of plugins, get's called on application termination/loader termination
     typedef void (*GlumityPlugin_ExitPoint)();
 
-    // Exports of MainLoader
-    typedef GlumityPluginLoader *(*GetLoaderInstance_t)();
-
-    typedef struct
-    {
-        GetLoaderInstance_t GetLoaderInstance;
-    } GlumityV2Exports;
+#define GLUMITYV2_PLUGIN_EXIT \
+    EXPORT void GlumityExit()
 
 #define INIT_GLUMITYV2_EXPORT(mod, exportName, exportType) \
     (exportType) GetProcAddress(mod, exportName);
-
-    void GlumityV2Exports_Init(GlumityV2Exports *exports);
 
     typedef void *(*GlumityV2Dumper_GetFunctionPointer_t)(const char *, const char *);
     typedef void (*GlumityV2Dumper_WaitForDumper_t)();

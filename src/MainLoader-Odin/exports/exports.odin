@@ -5,17 +5,7 @@ import "core:fmt"
 import "core:strconv"
 import "core:strings"
 
-global_loader: rawptr
-
-bind_global_loader :: proc(loaderPtr: rawptr) {
-	global_loader = loaderPtr
-}
-
-@(export)
-GetLoaderInstance :: proc() -> rawptr {
-	return global_loader
-} // add compatibility for old plugins
-
+// Could be problematic if called by a plugin, never worked but lets export it anyway
 @(export)
 Glumity_printf :: proc(format: cstring, args: ..any) {
 	c.printf("[GlumityV2]: ")

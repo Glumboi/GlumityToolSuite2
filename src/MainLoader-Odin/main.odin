@@ -22,8 +22,6 @@ setup :: proc() {
 
 	g_pluginLoader = dllLoader.dllLoader_create()
 
-	exports.bind_global_loader(&g_pluginLoader)
-
 	dllLoader.dllLoader_getDllsToLoad(&g_pluginLoader, g_cfg.pluginPath, g_cfg.blockList)
 	dllLoader.dllLoader_loadDlls(&g_pluginLoader)
 
