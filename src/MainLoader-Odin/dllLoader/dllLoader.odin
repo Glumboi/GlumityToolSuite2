@@ -62,14 +62,11 @@ dllLoader_getDllsToLoad :: proc(
 		return
 	}
 
-
 	for &file in files {
-		// TODO: Implement blocking the loading of dlls via config file
-
 		if helpers.has_file_extension(&file, ".dll") {
 			if helpers.is_in_slice([]string, blockList, file.name) {
 				exports.Glumity_printf(
-					"Didn't load dll: %s\n",
+					"Blocked dll: %s\n",
 					strings.unsafe_string_to_cstring(file.name),
 				)
 				continue

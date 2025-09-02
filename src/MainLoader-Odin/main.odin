@@ -17,11 +17,6 @@ setup :: proc() {
 	if cfg.useConsole && helpers.init_console() {
 		exports.Glumity_printf("Initialized console...\n")
 	}
-
-	for blocked in cfg.blockList {
-		exports.Glumity_printf("blocked dll: %s\n", strings.unsafe_string_to_cstring(blocked))
-	}
-
 	pluginLoader := dllLoader.dllLoader_create()
 	exports.bind_global_loader(&pluginLoader)
 	defer dllLoader.dllLoader_dispose(&pluginLoader)

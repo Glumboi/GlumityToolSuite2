@@ -1,6 +1,7 @@
 package dllLoaderConfig
 
 import "../exports"
+import "../helpers"
 import "base:runtime"
 import "core:encoding/ini"
 import "core:os"
@@ -53,8 +54,7 @@ loaderConfig_init :: proc(path: string) -> loaderConfig {
 
 	exports.Glumity_printf("Config!\n")
 	returnVal.useConsole, _ = strconv.parse_bool(returnVal.cfg["config"]["useConsole"])
-    // TODO: fix split only splitting last occurance
-	returnVal.blockList, err = strings.split(returnVal.cfg["config"]["blockList"], ",")
+	returnVal.blockList = strings.split(returnVal.cfg["config"]["blockList"], ",")
 
 	if err != nil {
 		exports.Glumity_printf("Error in reading blocklist from config!\n")
