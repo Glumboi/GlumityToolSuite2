@@ -21,9 +21,9 @@ setup :: proc() {
 	}
 
 	g_pluginLoader = dllLoader.dllLoader_create()
-
+	g_pluginLoader.pluginsPath = g_cfg.pluginPath
 	dllLoader.dllLoader_getDllsToLoad(&g_pluginLoader, g_cfg.pluginPath, g_cfg.blockList)
-	dllLoader.dllLoader_loadDlls(&g_pluginLoader)
+	dllLoader.dllLoader_loadDlls(&g_pluginLoader, g_cfg.loadDumperFirst)
 
 	if len(g_pluginLoader.loadedDlls) <= 0 {
 		exports.Glumity_printf(
@@ -32,8 +32,8 @@ setup :: proc() {
 		)
 	} else {
 		exports.Glumity_printf("Loaded dlls: \n")
-		for hModule in g_pluginLoader.loadedDlls {
-			exports.Glumity_printf("%p\n", hModule)
+		for dll, mod in g_pluginLoader.loadedDlls {
+			c.printf("%p\n", mod)
 		}
 		dllLoader.dllLoader_call_exported_from_dlls(&g_pluginLoader, dllLoader.GLUMITY_ENTRY)
 	}
