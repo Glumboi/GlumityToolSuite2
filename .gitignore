@@ -3,6 +3,9 @@
 .vscode/
 build/
 
+# static libs
+.a
+
 # MacOS Cache
 .DS_Store
 

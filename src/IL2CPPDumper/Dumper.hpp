@@ -21,14 +21,8 @@ namespace GlumityV2Dumper
         bool InitIL2CPPResolver()
         {
             // init IL2CPP
-            if (IL2CPP::Initialize(true) && IL2CPP::Thread::Attach(IL2CPP::Domain::Get()))
-            {
-                m_initState = true;
-                return true;
-            }
-
-            m_initState = false;
-            return false;
+            m_initState = (IL2CPP::Initialize(true) && IL2CPP::Thread::Attach(IL2CPP::Domain::Get()));
+            return m_initState;
         }
 
     public:

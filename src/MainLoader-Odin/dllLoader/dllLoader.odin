@@ -1,6 +1,5 @@
 package dllLoader
 
-import "../backCompat"
 import "../cppDumper"
 import "../exports"
 import "../helpers"
@@ -11,7 +10,7 @@ import "core:path/filepath"
 import "core:strings"
 import "core:sys/windows"
 
-dllLoader_generic_function :: distinct proc "system" ()
+dllLoader_generic_function :: distinct proc()
 
 GLUMITY_ENTRY :: "GlumityMain"
 GLUMITY_EXIT :: "GlumityExit"
@@ -87,7 +86,7 @@ dllLoader_LoadOldDll :: proc(loader: ^dllLoader, file: string, requestFile: stri
 
 	fileName := helpers.get_file_name(file)
 	exports.Glumity_printf(
-		"Dll: %s is an old plugin, functionality could be broken!\n",
+		"%s is an old plugin, functionality could be broken!\n",
 		strings.unsafe_string_to_cstring(file),
 	)
 
@@ -95,7 +94,6 @@ dllLoader_LoadOldDll :: proc(loader: ^dllLoader, file: string, requestFile: stri
 	cppDumper.old_plugin_supply_request(requestFile)
 }
 
-@(private)
 dllLoader_LoadIL2CPPDumper :: proc(loader: ^dllLoader) {
 	dumperPath := strings.concatenate({loader.pluginsPath, "/GlumityV2IL2CPPDumper.dll"})
 
@@ -127,12 +125,8 @@ dllLoader_LoadIL2CPPDumper :: proc(loader: ^dllLoader) {
 	loader.loadedDlls[dumperPath] = mod
 }
 
-dllLoader_loadDlls :: proc(loader: ^dllLoader, loadDumperFirst: bool = true) {
+dllLoader_loadDlls :: proc(loader: ^dllLoader) {
 	if loader == nil {return}
-
-	if loadDumperFirst {
-		dllLoader_LoadIL2CPPDumper(loader)
-	}
 
 	if len(loader.dllsToLoad) <= 0 {return}
 
@@ -142,11 +136,6 @@ dllLoader_loadDlls :: proc(loader: ^dllLoader, loadDumperFirst: bool = true) {
 		if handle != nil {continue}
 
 		exports.Glumity_printf("Trying to load: %s\n", strings.unsafe_string_to_cstring(k))
-
-		isOld, requestFile := backCompat.is_old_version_plugin(k, loader.pluginsPath)
-		if isOld {
-			dllLoader_LoadOldDll(loader, k, requestFile)
-		}
 
 		mod := windows.LoadLibraryA(strings.unsafe_string_to_cstring(k))
 		if mod == nil {

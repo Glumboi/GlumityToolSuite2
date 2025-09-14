@@ -33,15 +33,12 @@ offsetRequest :: struct {
 
 IL2CPPDUMPER_MODULE_NAME :: "GlumityV2IL2CPPDumper.dll"
 
-GlumityV2Dumper_WaitForDumper_t :: distinct proc "system" ()
-
-@(export)
+@(private)
+GlumityV2Dumper_WaitForDumper_t :: distinct proc()
 GlumityV2Dumper_WaitForDumper: GlumityV2Dumper_WaitForDumper_t
 
-GlumityV2Dumper_GetFunctionPointer_t :: distinct
-proc "system" (class: cstring, function: cstring) -> rawptr
-
-@(export)
+@(private)
+GlumityV2Dumper_GetFunctionPointer_t :: distinct proc(class: cstring, function: cstring) -> rawptr
 GlumityV2Dumper_GetFunctionPointer: GlumityV2Dumper_GetFunctionPointer_t
 
 il2cpp_dumper_find_exports :: proc() {
@@ -57,7 +54,6 @@ il2cpp_dumper_find_exports :: proc() {
 	)
 }
 
-@(private)
 il2cpp_dumper_get_function_ptr :: proc(class: cstring, function: cstring) -> rawptr {
 
 	if GlumityV2Dumper_WaitForDumper == nil || GlumityV2Dumper_GetFunctionPointer == nil {
@@ -117,18 +113,16 @@ old_plugin_supply_request :: proc(requestFile: string) {
 			function = strings.clone(funcPart),
 		}
 
-		c.printf(
-			"Class: %s | Function: %s\n",
-			strings.unsafe_string_to_cstring(camelClass),
-			strings.unsafe_string_to_cstring(funcPart),
-		)
-
 		ptr := il2cpp_dumper_get_function_ptr(
 			strings.unsafe_string_to_cstring(camelClass),
 			strings.unsafe_string_to_cstring(funcPart),
 		)
 
-
-		c.printf("Function pointer of above request: %p\n", ptr)
+		c.printf(
+			"Class: %s | Function: %s\nPtr:%p\n",
+			strings.unsafe_string_to_cstring(camelClass),
+			strings.unsafe_string_to_cstring(funcPart),
+			ptr,
+		)
 	}
 }
