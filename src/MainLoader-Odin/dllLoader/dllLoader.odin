@@ -40,7 +40,6 @@ dllLoader_getDllsToLoad :: proc(
 		return
 	}
 
-	// Correctly open the directory handle
 	dirHandle, openErr := os.open(locationToSearch)
 	if openErr != nil {
 		exports.Glumity_printf(

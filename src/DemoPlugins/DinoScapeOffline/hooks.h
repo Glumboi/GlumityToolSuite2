@@ -25,7 +25,6 @@ struct String *PlayFabApiSettings_GetFullUrl_hook(void *__this, struct String *a
     struct String *res = PlayFabApiSettings_GetFullUrl_o(__this, apiCall, getParams);
 
     char *chars = ToCString(res);
-
     char *path = strstr(chars, ".com");
     if (path)
         path += 4; // skip .com
@@ -58,6 +57,8 @@ struct String *PlayFabApiSettings_GetFullUrl_hook(void *__this, struct String *a
     GlumityPlugin_printf("original: %s\n", MY_PLUGIN, chars);
     GlumityPlugin_printf("spoofed: %s\n", MY_PLUGIN, ToCString(str));
 #endif
+
+    free(chars);
     return str;
 }
 
@@ -74,7 +75,7 @@ void Hooks_PreInstall()
         FILE *f = fopen(file, "w");
         if (!f)
         {
-            GlumityPlugin_printf("Failed to create newUrl.txt, aborting hooking!\n", "DinoScapeOffline");
+            GlumityPlugin_printf("Failed to create newUrl.txt, aborting hooking!\n", MY_PLUGIN);
             return;
         }
 
@@ -92,7 +93,7 @@ void Hooks_Install(void *PlayFabApiSettings_GetFullUrl_ptr)
 
     GLUMITYV2_INIT_HOOKING(MY_PLUGIN, return)
     {
-        GlumityPlugin_printf("Initialized Minhook\n",MY_PLUGIN);
+        GlumityPlugin_printf("Initialized Minhook\n", MY_PLUGIN);
     }
 
     PlayFabApiSettings_GetFullUrl_o = (PlayFabApiSettings_GetFullUrl_t)PlayFabApiSettings_GetFullUrl_ptr;

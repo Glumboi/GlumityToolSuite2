@@ -52,7 +52,7 @@ cleanup :: proc() {
 
 setup_thread_adapter :: proc "std" (param: rawptr) -> u32 {
 	context = runtime.default_context()
-	setup() // call your original setup function
+	setup() // run this function
 	return 0 // thread exit code
 }
 

@@ -67,6 +67,7 @@ il2cpp_dumper_get_function_ptr :: proc(class: cstring, function: cstring) -> raw
 	return GlumityV2Dumper_GetFunctionPointer(class, function)
 }
 
+// TODO: Fix and implement, meant to add support for my older v1 toolsuite that used a different way of getting function offsets at "runtime"
 old_plugin_supply_request :: proc(requestFile: string) {
 
 	if !os.exists(requestFile) {
