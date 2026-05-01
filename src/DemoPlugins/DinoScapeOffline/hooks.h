@@ -15,7 +15,10 @@ static char *urlReroute = "http://localhost:8000";
 
 struct String *PlayFabApiSettings_GetFullUrl_hook(void *__this, struct String *apiCall, void **getParams)
 {
+#ifdef DEBUG
+
     GlumityPlugin_printf("PlayFabApiSettings_GetFullUrl called!\n", "DinoScapeOffline");
+#endif
 
     struct String *res = PlayFabApiSettings_GetFullUrl_o(__this, apiCall, getParams);
 
@@ -49,8 +52,10 @@ struct String *PlayFabApiSettings_GetFullUrl_hook(void *__this, struct String *a
     for (size_t i = 0; i < pathLen; i++)
         buffer[prefixLen + i] = (uint16_t)path[i];
 
+#ifdef DEBUG
     GlumityPlugin_printf("original: %s\n", "DinoScapeOffline", chars);
     GlumityPlugin_printf("spoofed: %s\n", "DinoScapeOffline", ToCString(str));
+#endif
     return str;
 }
 
