@@ -21,6 +21,7 @@ inline char *ToCString(struct String *str)
     int len = str->fields.m_stringLength;
     uint16_t *chars = &str->fields.m_firstChar;
 
+    // TODO: Check for memory leaks, I believe the game should manage it
     char *result = malloc(len + 1);
 
     for (int i = 0; i < len; i++)

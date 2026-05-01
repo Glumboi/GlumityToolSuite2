@@ -59,9 +59,12 @@ EXPORT void *GlumityV2Dumper_GetFunctionPointerWithPattern(HMODULE module, const
         }
         if (found)
         {
+            GlumityPlugin_printf("Found!\n", PRINT_HEAD);
             return &scanBytes[i];
         }
     }
+
+    GlumityPlugin_printf("Not found!\n", PRINT_HEAD);
     return nullptr;
 }
 
