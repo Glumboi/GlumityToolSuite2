@@ -45,7 +45,7 @@ namespace GlumityV2Dumper
 
             size_t outSz = 0;
             m_gameAssemblies = IL2CPP::Domain::GetAssemblies(&outSz);
-#ifdef __DEBUG
+#ifdef DEBUG
             for (size_t i = 0; i < outSz; i++)
             {
                 auto *img = m_gameAssemblies[i];
@@ -54,7 +54,7 @@ namespace GlumityV2Dumper
 #endif
 
             IL2CPP::Class::FetchClasses(&m_gameClasses, MAIN_IMAGE, "");
-#ifdef __DEBUG
+#ifdef DEBUG
             for (size_t i = 0; i < m_gameClasses.size(); i++)
             {
                 auto *c = m_gameClasses[i];

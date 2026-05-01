@@ -3,7 +3,7 @@
 void GlumityPlugin_printf(const char *fmt, const char *printHeaderInner, ...)
 {
     va_list args;
-    va_start(args, printHeaderInner); 
+    va_start(args, printHeaderInner);
     int len = vsnprintf(NULL, 0, fmt, args);
     va_end(args);
 
@@ -17,6 +17,7 @@ void GlumityPlugin_printf(const char *fmt, const char *printHeaderInner, ...)
     va_end(args);
 
     printf("[%s]: %s", printHeaderInner, msg);
+    
     free(msg);
 }
 
@@ -33,5 +34,8 @@ void GlumityV2DumperExports_Init(GlumityV2DumperExports *dumperExports)
     }
 
     dumperExports->GlumityV2Dumper_GetFunctionPointer = INIT_GLUMITYV2_EXPORT(mod, "GlumityV2Dumper_GetFunctionPointer", GlumityV2Dumper_GetFunctionPointer_t);
+    dumperExports->GlumityV2Dumper_GetFunctionPointer_FromModule = INIT_GLUMITYV2_EXPORT(mod, "GlumityV2Dumper_GetFunctionPointer_FromModule", GlumityV2Dumper_GetFunctionPointer_FromModule_t);
+    dumperExports->GlumityV2Dumper_GetFunctionPointerWithPattern = INIT_GLUMITYV2_EXPORT(mod, "GlumityV2Dumper_GetFunctionPointerWithPattern", GlumityV2Dumper_GetFunctionPointerWithPattern_t);
+    dumperExports->GlumityV2Dumper_GetFunctionPointer_Global = INIT_GLUMITYV2_EXPORT(mod, "GlumityV2Dumper_GetFunctionPointer_Global", GlumityV2Dumper_GetFunctionPointer_Global_t);
     dumperExports->GlumityV2Dumper_WaitForDumper = INIT_GLUMITYV2_EXPORT(mod, "GlumityV2Dumper_WaitForDumper", GlumityV2Dumper_WaitForDumper_t);
 }

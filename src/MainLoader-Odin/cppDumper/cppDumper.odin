@@ -41,10 +41,10 @@ GlumityV2Dumper_WaitForDumper: GlumityV2Dumper_WaitForDumper_t
 GlumityV2Dumper_GetFunctionPointer_t :: distinct proc(class: cstring, function: cstring) -> rawptr
 GlumityV2Dumper_GetFunctionPointer: GlumityV2Dumper_GetFunctionPointer_t
 
-il2cpp_dumper_find_exports :: proc() {
+il2cpp_dumper_find_exports :: proc() -> bool {
 	dumperHmod := windows.GetModuleHandleA(IL2CPPDUMPER_MODULE_NAME)
 	if dumperHmod == nil {
-		return
+		return false
 	}
 	GlumityV2Dumper_WaitForDumper = GlumityV2Dumper_WaitForDumper_t(
 		windows.GetProcAddress(dumperHmod, "GlumityV2Dumper_WaitForDumper"),
@@ -52,6 +52,8 @@ il2cpp_dumper_find_exports :: proc() {
 	GlumityV2Dumper_GetFunctionPointer = GlumityV2Dumper_GetFunctionPointer_t(
 		windows.GetProcAddress(dumperHmod, "GlumityV2Dumper_GetFunctionPointer"),
 	)
+
+	return true
 }
 
 il2cpp_dumper_get_function_ptr :: proc(class: cstring, function: cstring) -> rawptr {
