@@ -8,6 +8,8 @@
 #include <string.h>
 #include "customTypes.h"
 
+#define MY_PLUGIN "DinoScapeOffline"
+
 typedef struct String *(*PlayFabApiSettings_GetFullUrl_t)(void *, struct String *, void **);
 PlayFabApiSettings_GetFullUrl_t PlayFabApiSettings_GetFullUrl_o;
 
@@ -17,7 +19,7 @@ struct String *PlayFabApiSettings_GetFullUrl_hook(void *__this, struct String *a
 {
 #ifdef DEBUG
 
-    GlumityPlugin_printf("PlayFabApiSettings_GetFullUrl called!\n", "DinoScapeOffline");
+    GlumityPlugin_printf("PlayFabApiSettings_GetFullUrl called!\n", MY_PLUGIN);
 #endif
 
     struct String *res = PlayFabApiSettings_GetFullUrl_o(__this, apiCall, getParams);
@@ -53,8 +55,8 @@ struct String *PlayFabApiSettings_GetFullUrl_hook(void *__this, struct String *a
         buffer[prefixLen + i] = (uint16_t)path[i];
 
 #ifdef DEBUG
-    GlumityPlugin_printf("original: %s\n", "DinoScapeOffline", chars);
-    GlumityPlugin_printf("spoofed: %s\n", "DinoScapeOffline", ToCString(str));
+    GlumityPlugin_printf("original: %s\n", MY_PLUGIN, chars);
+    GlumityPlugin_printf("spoofed: %s\n", MY_PLUGIN, ToCString(str));
 #endif
     return str;
 }
@@ -66,7 +68,7 @@ void Hooks_PreInstall()
     GetCurrentDirectoryA(sizeof(file), file);
     strcat(file, "\\Plugins\\newUrl.txt");
     FILE *f = fopen(file, "r");
-    GlumityPlugin_printf("Trying to read new url from: %s\n", "DinoScapeOffline", file);
+    GlumityPlugin_printf("Trying to read new url from: %s\n", MY_PLUGIN, file);
     if (!f)
     {
         FILE *f = fopen(file, "w");
@@ -88,9 +90,9 @@ void Hooks_Install(void *PlayFabApiSettings_GetFullUrl_ptr)
 {
     Hooks_PreInstall();
 
-    GLUMITYV2_INIT_HOOKING("DinoScapeOffline", return)
+    GLUMITYV2_INIT_HOOKING(MY_PLUGIN, return)
     {
-        GlumityPlugin_printf("Initialized Minhook\n", "DinoScapeOffline");
+        GlumityPlugin_printf("Initialized Minhook\n",MY_PLUGIN);
     }
 
     PlayFabApiSettings_GetFullUrl_o = (PlayFabApiSettings_GetFullUrl_t)PlayFabApiSettings_GetFullUrl_ptr;
@@ -100,5 +102,5 @@ void Hooks_Install(void *PlayFabApiSettings_GetFullUrl_ptr)
         PlayFabApiSettings_GetFullUrl_o,
         PlayFabApiSettings_GetFullUrl_hook);
 
-    GLUMITYV2_GAME_HOOK_ENABLE_ALL("DinoScapeOffline");
+    GLUMITYV2_GAME_HOOK_ENABLE_ALL(MY_PLUGIN);
 }

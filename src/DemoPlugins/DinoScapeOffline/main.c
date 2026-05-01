@@ -2,10 +2,6 @@
 #include "hooks.h"
 #include <string.h>
 
-// Example plugin for PC Building Simulator 2
-
-#define MY_PLUGIN "DinoScapeOffline"
-
 GlumityV2DumperExports dumperExports;
 
 HMODULE ForceGetHmodule(const char *moduleName, bool isInApplicationFolder)
