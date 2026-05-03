@@ -9,7 +9,7 @@
 #define EXPORT __declspec(dllexport)
 #endif
 
-#define GLUMITY_PRINT_HEADER "[GlumityToolsuiteV2]: "
+#define GLUMITY_PRINT_HEADER "[GlumityV2]: "
 
 /// @brief Printf for glumity specific code, uses malloc and free for a temp char*, caller doesn't need to manage
 /// @param fmt

@@ -3,6 +3,8 @@
 
 #include <windows.h>
 #include <stdio.h>
+#include <assert.h>
+#include <stddef.h>
 #include <MinHook.h>
 
 #define GLUMITYV2_DUMPER_MODULE "GlumityV2IL2CPPDumper"
@@ -114,9 +116,134 @@ extern "C"
 
 #define GLUMITYV2_PLUGIN_INIT_IL2CPP \
     if (IL2CPP::Initialize(true) && IL2CPP::Thread::Attach(IL2CPP::Domain::Get()))
-
 #ifdef __cplusplus
 }
 #endif
+
+// Some il2cpp type helpers
+// e.g:
+/*
+struct DinoInfo__Fields {
+    // 0x00 to 0x50 is exactly 0x50 bytes of padding
+    PAD_TO(0x00, 0x50);
+
+    bool isSelected;    // Offset 0x50
+    bool owned;         // Offset 0x51
+
+    // Preloader is at 0x58. Current offset is 0x52.
+    PAD_TO(0x52, 0x58);
+    void* Preloader;    // Offset 0x58
+};
+*/
+
+// Combines two tokens together (needed for unique padding names)
+#define COMBINE_INNER(a, b) a##b
+#define COMBINE(a, b) COMBINE_INNER(a, b)
+
+// Creates a padding array of a specific size
+#define PAD(size) uint8_t COMBINE(pad_, __LINE__)[size]
+
+// Creates padding from current position to a target offset
+#define PAD_TO(current, target) uint8_t COMBINE(pad_, __LINE__)[target - current]
+
+typedef void (*IL2CPP_Method_Pointer)();
+typedef void *(*InvokerMethod)(IL2CPP_Method_Pointer, struct IL2CPP_MethodInfo const *, void *, void **);
+typedef const void *Il2CppMetadataMethodDefinitionHandle;
+typedef const void *const *Il2CppMetadataGenericContainerHandle;
+
+union IL2CPP_RGCTXData
+{
+    PAD_TO(0x00, 0x08); // stubbing this for now
+};
+
+static_assert(sizeof(union IL2CPP_RGCTXData) == 0x08, "Struct size mismatch!");
+
+struct IL2CPP_GenericMethod
+{
+    PAD_TO(0x00, 0x18);
+};
+
+static_assert(sizeof(struct IL2CPP_GenericMethod) == 0x18, "Struct size mismatch!");
+
+struct IL2CPP_Type
+{
+    PAD_TO(0x00, 0x10);
+};
+
+static_assert(sizeof(struct IL2CPP_Type) == 0x10, "Struct size mismatch!");
+
+struct IL2CPP_Class
+{
+    PAD_TO(0x00, 0x010);
+    char const *name;
+    char const *namespaze;
+    PAD_TO(0x20, 0x0338);
+};
+
+static_assert(sizeof(struct IL2CPP_Class) == 0x0338, "Struct size mismatch!");
+
+struct ParameterInfo
+{
+    PAD_TO(0x00, 0x18);
+};
+
+struct IL2CPP_MethodInfo
+{
+    IL2CPP_Method_Pointer methodPointer;
+    InvokerMethod invoker_method;
+    char const *name;
+    struct IL2CPP_Class *klass;
+    struct IL2CPP_Type const *return_type;
+    struct ParameterInfo const *parameters;
+    union
+    {
+        union IL2CPP_RGCTXData const *rgctx_data;
+        Il2CppMetadataMethodDefinitionHandle methodMetadataHandle;
+    } Il2CppVariant;
+    union
+    {
+        struct IL2CPP_GenericMethod const *genericMethod;
+        Il2CppMetadataGenericContainerHandle genericContainerHandle;
+    };
+    uint32_t token;
+    uint16_t flags;
+    uint16_t iflags;
+    uint16_t slot;
+    uint8_t parameters_count;
+    PAD_TO(0x50, 0x58);
+};
+
+static_assert(sizeof(struct IL2CPP_MethodInfo) == 0x58, "Struct size mismatch!");
+
+struct IL2CPP_VirtualInvokeData
+{
+    IL2CPP_Method_Pointer methodPtr;
+    struct IL2CPP_MethodInfo const *method;
+};
+
+static_assert(sizeof(struct IL2CPP_VirtualInvokeData) == 0x10, "Struct size mismatch!");
+
+typedef struct IL2CPP_String__Fields
+{
+    int32_t m_stringLength;
+    uint16_t m_firstChar;
+} GlumityV2_il2cppStr_fields;
+
+typedef struct IL2CPP_String
+{
+    void *klass;
+    void *monitor;
+    struct IL2CPP_String__Fields fields;
+} GlumityV2_il2cppStr;
+
+/// @brief Allocates memory, caller has to manage returned pointer
+/// @param str a pointer to an initialized il2cpp string
+/// @return pointer to a newly allocated ascii, null terminated c string, il2cpp strings are normally utf encoded, so it could be lossy
+char *IL2CPP_String_ToCString(GlumityV2_il2cppStr *str);
+
+/// @brief Allocates memory, caller has to manage returned pointer, can be ignored as well and let the game "manage" it, might cause leaks eventually
+/// @param input Any null terminated c string
+/// @return A pointer to a newly allocated il2cpp string
+GlumityV2_il2cppStr *IL2CPP_String_Create(const char *input);
 
 #endif
