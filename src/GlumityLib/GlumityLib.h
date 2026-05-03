@@ -150,6 +150,48 @@ typedef void (*IL2CPP_Method_Pointer)();
 typedef void *(*InvokerMethod)(IL2CPP_Method_Pointer, struct IL2CPP_MethodInfo const *, void *, void **);
 typedef const void *Il2CppMetadataMethodDefinitionHandle;
 typedef const void *const *Il2CppMetadataGenericContainerHandle;
+typedef struct ___Il2CppMetadataImageHandle const *Il2CppMetadataImageHandle;
+typedef struct ___Il2CppMetadataTypeHandle const *Il2CppMetadataTypeHandle;
+typedef struct ___Il2CppMetadataGenericParameterHandle const *Il2CppMetadataGenericParameterHandle;
+
+struct IL2CPP_AssemblyName
+{
+    char const *name;
+    char const *culture;
+    uint8_t const *public_key;
+    uint32_t hash_alg;
+    int32_t hash_len;
+    uint32_t flags;
+    int32_t major;
+    int32_t minor;
+    int32_t build;
+    int32_t revision;
+    uint8_t public_key_token[0x8];
+};
+
+struct IL2CPP_Assembly
+{
+    struct Il2CppImage *image;
+    uint32_t token;
+    int32_t referencedAssemblyStart;
+    int32_t referencedAssemblyCount;
+    struct IL2CPP_AssemblyName aname;
+};
+
+struct IL2CPP_Image
+{
+    char const *name;
+    char const *nameNoExt;
+    struct IL2CPP_Assembly *assembly;
+    uint32_t typeCount;
+    uint32_t exportedTypeCount;
+    uint32_t customAttributeCount;
+    Il2CppMetadataImageHandle metadataHandle;
+    struct Il2CppNameToTypeHandleHashTable *nameToClassHashTable;
+    struct Il2CppCodeGenModule const *codeGenModule;
+    uint32_t token;
+    uint8_t dynamic;
+};
 
 union IL2CPP_RGCTXData
 {
@@ -167,17 +209,42 @@ static_assert(sizeof(struct IL2CPP_GenericMethod) == 0x18, "Struct size mismatch
 
 struct IL2CPP_Type
 {
-    PAD_TO(0x00, 0x10);
+    union
+    {
+        void *dummy;
+        int32_t __klassIndex;
+        Il2CppMetadataTypeHandle typeHandle;
+        struct Il2CppType const *type;
+        struct Il2CppArrayType *array;
+        int32_t __genericParameterIndex;
+        Il2CppMetadataGenericParameterHandle genericParameterHandle;
+        struct Il2CppGenericClass *generic_class;
+    } data;
+    union
+    {
+        uint32_t attrs;
+        enum Il2CppTypeEnum type;
+        uint32_t num_mods;
+        uint32_t byref;
+        uint32_t pinned;
+    } __bitfield8;
 };
 
 static_assert(sizeof(struct IL2CPP_Type) == 0x10, "Struct size mismatch!");
 
 struct IL2CPP_Class
 {
-    PAD_TO(0x00, 0x010);
+    struct IL2CPP_Image const *image;
+    PAD_TO(0x08, 0x010);
     char const *name;
     char const *namespaze;
-    PAD_TO(0x20, 0x0338);
+    struct IL2CPP_Type byval_arg;
+    struct IL2CPP_Type this_arg;
+    struct IL2CPP_Class *element_class;
+    struct IL2CPP_Class *castClass;
+    struct IL2CPP_Class *declaringType;
+    struct IL2CPP_Class *parent;
+    PAD_TO(0x60, 0x0338);
 };
 
 static_assert(sizeof(struct IL2CPP_Class) == 0x0338, "Struct size mismatch!");
@@ -222,6 +289,71 @@ struct IL2CPP_VirtualInvokeData
 };
 
 static_assert(sizeof(struct IL2CPP_VirtualInvokeData) == 0x10, "Struct size mismatch!");
+
+struct GameObject__VTable
+{
+    struct IL2CPP_VirtualInvokeData Equals;
+    struct IL2CPP_VirtualInvokeData Finalize;
+    struct IL2CPP_VirtualInvokeData GetHashCode;
+    struct IL2CPP_VirtualInvokeData ToString;
+};
+
+struct IL2CPP_Class_0
+{
+    struct Il2CppImage const *image;
+    void *gc_desc;
+    char const *name;
+    char const *namespaze;
+    struct IL2CPP_Type byval_arg;
+    struct IL2CPP_Type this_arg;
+    struct IL2CPP_Class *element_class;
+    struct IL2CPP_Class *castClass;
+    struct IL2CPP_Class *declaringType;
+    struct IL2CPP_Class *parent;
+    struct Il2CppGenericClass *generic_class;
+    Il2CppMetadataTypeHandle typeMetadataHandle;
+    struct Il2CppInteropData const *interopData;
+    struct IL2CPP_Class *klass;
+    struct FieldInfo *fields;
+    struct EventInfo const *events;
+    struct PropertyInfo const *properties;
+    struct MethodInfo const **methods;
+    struct IL2CPP_Class **nestedTypes;
+    struct IL2CPP_Class **implementedInterfaces;
+};
+
+struct GameObject__Class
+{
+    struct IL2CPP_Class_0 _0;
+    struct Il2CppRuntimeInterfaceOffsetPair *interfaceOffsets;
+    struct GameObject__StaticFields *static_fields;
+    union Il2CppRGCTXData const *rgctx_data;
+    PAD_TO(0xC8, 0x12A);
+    uint16_t unknown_12a;
+    uint8_t unknown_12c;
+    PAD_TO(0x12D, 0x138);
+
+    struct GameObject__VTable vtable;
+};
+
+static_assert(sizeof(struct GameObject__Class) == 0x0178, "Struct size mismatch!");
+
+struct Object_1__Fields
+{
+    void *m_CachedPtr;
+};
+
+struct GameObject__Fields
+{
+    struct Object_1__Fields _;
+};
+
+struct GameObject
+{
+    struct GameObject__Class *klass;
+    struct MonitorData *monitor;
+    struct GameObject__Fields fields;
+};
 
 typedef struct IL2CPP_String__Fields
 {

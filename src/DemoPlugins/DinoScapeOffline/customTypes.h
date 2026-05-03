@@ -103,7 +103,7 @@ struct MainReferences__Fields
     void *playerReferences;
     void *NP;
     void *LevelGenerator;
-    void *zoneScript;
+    struct GameObject *zoneScript;
     void *PlayerLavaParticles;
     bool IsInLava;
     void *rigid;
@@ -259,4 +259,45 @@ struct DinoInfo
     void *vtable;
     void *monitor;
     struct DinoInfo__Fields fields; // starts at 0x10 usually, but dump says the class is 0x70
+};
+
+struct ZoneMove__VTable
+{
+    struct IL2CPP_VirtualInvokeData Equals;
+    struct IL2CPP_VirtualInvokeData Finalize;
+    struct IL2CPP_VirtualInvokeData GetHashCode;
+    struct IL2CPP_VirtualInvokeData ToString;
+};
+
+struct ZoneMove__Class
+{
+    struct IL2CPP_Class_0 _0;
+    struct Il2CppRuntimeInterfaceOffsetPair *interfaceOffsets;
+    struct ZoneMove__StaticFields *static_fields;
+    union Il2CppRGCTXData const *rgctx_data;
+    PAD_TO(0x0c8, 0x0138);
+    struct ZoneMove__VTable vtable;
+};
+
+static_assert(sizeof(struct ZoneMove__Class) == 0x0178, "Struct size mismatch!");
+
+struct ZoneMove__Fields
+{
+    PAD_TO(0x00, 0x018);
+
+    float MoveSpeed;
+    struct Vector3 StartPos;
+    bool DontMove;
+    float TimeToLast;
+    float StartX;
+    float elapsedTime;
+};
+
+static_assert(sizeof(struct ZoneMove__Fields) == 0x038, "Struct size mismatch!");
+
+struct ZoneMove
+{
+    struct ZoneMove__Class *klass;
+    struct MonitorData *monitor;
+    struct ZoneMove__Fields fields;
 };

@@ -8,16 +8,22 @@ BOOL DinoInfo_CheckIfOwned_hook(struct DinoInfo *_this, struct IL2CPP_MethodInfo
 
 void MainReferences_Update_hook(struct MainReferences *_this)
 {
-    // Example for getting game info
-    // if (_this->klass->vtable.ToString.method->name)
-    // {
-    //     GlumityPlugin_printf("%s.%s!\n", MY_PLUGIN, _this->klass->vtable.ToString.method->klass->namespaze, _this->klass->vtable.ToString.method->klass->name);
-    // }
+    // force off zone example
+    struct ZoneMove *z = (struct ZoneMove *)_this->fields.zoneScript;
+    static bool wasPressed = false;
+    bool isCurrentlyDown = GetAsyncKeyState(VK_F2) & 0x8000;
+    if (z && isCurrentlyDown && !wasPressed)
+    {
+        z->fields.DontMove = !z->fields.DontMove;
+        GlumityPlugin_printf("Set zone DontMove to: %d!\n", MY_PLUGIN, z->fields.DontMove);
+    }
+    wasPressed = isCurrentlyDown;
     MainReferences_Update_o(_this);
 }
 
 struct IL2CPP_String *PlayFabApiSettings_GetFullUrl_hook(struct PlayFabApiSettings *_this, struct IL2CPP_String *apiCall, void **getParams)
 {
+
 #ifdef DEBUG
     GlumityPlugin_printf("PlayFabApiSettings_GetFullUrl_hook called!\n", MY_PLUGIN);
 #endif
