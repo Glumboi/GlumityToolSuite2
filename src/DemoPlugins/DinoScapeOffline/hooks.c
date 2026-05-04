@@ -2,12 +2,20 @@
 
 BOOL DinoInfo_CheckIfOwned_hook(struct DinoInfo *_this, struct IL2CPP_MethodInfo *mi)
 {
-    _this->fields.owned = true;
     return true; // Force unlock all dinos!
 }
 
 void MainReferences_Update_hook(struct MainReferences *_this)
 {
+    // Demonstrati on of invoking a game function
+    // struct IL2CPP_String *res = IL2CPP_InvokeMethod(_this->klass, _this->klass->vtable.ToString.method->name, _this, NULL);
+    // char *resConverted = IL2CPP_String_ToCString(res);
+    // if (resConverted)
+    // {
+    //     GlumityPlugin_printf("Invoked ToString [%s]!\n", MY_PLUGIN, resConverted);
+    //     free(resConverted);
+    // }
+
     // force off zone example
     struct ZoneMove *z = (struct ZoneMove *)_this->fields.zoneScript;
     static bool wasPressed = false;

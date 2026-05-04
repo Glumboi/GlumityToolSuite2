@@ -101,6 +101,9 @@ extern "C"
     if (hThread)                                                                         \
         CloseHandle(hThread);
 
+// Declare to use it here already
+void IL2CPP_ResolveFunctions();
+
 #define GLUMITYV2_DUMPER_WAITFOR_INIT(dumperExports)   \
     if (!dumperExports.GlumityV2Dumper_WaitForDumper)  \
     {                                                  \
@@ -109,6 +112,7 @@ extern "C"
     if (dumperExports.GlumityV2Dumper_WaitForDumper)   \
     {                                                  \
         dumperExports.GlumityV2Dumper_WaitForDumper(); \
+        IL2CPP_ResolveFunctions();                     \
     }
 
 #define GLUMITYV2_DUMPER_GET_GAME_FUNCTION(className, functionName, dumperExports) \
@@ -124,7 +128,7 @@ extern "C"
 // e.g:
 /*
 struct DinoInfo__Fields {
-    // 0x00 to 0x50 is exactly 0x50 bytes of padding
+    // 0x50 bytes of padding
     PAD_TO(0x00, 0x50);
 
     bool isSelected;    // Offset 0x50
@@ -377,5 +381,22 @@ char *IL2CPP_String_ToCString(GlumityV2_il2cppStr *str);
 /// @param input Any null terminated c string
 /// @return A pointer to a newly allocated il2cpp string
 GlumityV2_il2cppStr *IL2CPP_String_Create(const char *input);
+
+typedef struct Il2CppObject Il2CppObject;
+typedef struct Il2CppException Il2CppException;
+
+typedef void *(*il2cpp_domain_get_t)();
+typedef void *(*il2cpp_thread_attach_t)(void *domain);
+typedef void *(*il2cpp_runtime_invoke_t)(void *method, void *obj, void **params, void **exc);
+typedef void *(*il2cpp_class_get_method_from_name_t)(void *klass, const char *name, int argsCount);
+
+// Global function pointers
+il2cpp_domain_get_t _il2cpp_domain_get;
+il2cpp_thread_attach_t _il2cpp_thread_attach;
+il2cpp_runtime_invoke_t _il2cpp_runtime_invoke;
+il2cpp_class_get_method_from_name_t _il2cpp_class_get_method_from_name;
+
+Il2CppObject *IL2CPP_InvokeMethod(struct IL2CPP_Class *klass, const char *method_name, void *instance, void **params);
+void IL2CPP_ResolveFunctions();
 
 #endif

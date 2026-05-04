@@ -73,6 +73,7 @@ EXPORT void GlumityV2Dumper_WaitForDumper()
     while (!dumper.GetInitState())
     {
         Sleep(60);
+        
         continue;
     }
 }
