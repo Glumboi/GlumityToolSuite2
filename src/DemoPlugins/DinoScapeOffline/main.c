@@ -30,7 +30,43 @@ HMODULE ForceGetHmodule(const char *moduleName, bool isInApplicationFolder)
     return returnModule;
 }
 
-void MakeHooks()
+void LaunchCustomServer()
+{
+    STARTUPINFO si;
+    PROCESS_INFORMATION pi;
+
+    ZeroMemory(&si, sizeof(si));
+    si.cb = sizeof(si);
+    ZeroMemory(&pi, sizeof(pi));
+
+    // Start the child process.
+    if (!CreateProcess(NULL,                             // No module name (use command line)
+                       "./Plugins/DinoScape-Server.exe", // Command line
+                       NULL,                             // Process handle not inheritable
+                       NULL,                             // Thread handle not inheritable
+                       FALSE,                            // Set handle inheritance to FALSE
+                       0,                                // No creation flags
+                       NULL,                             // Use parent's environment block
+                       NULL,                             // Use parent's starting directory
+                       &si,                              // Pointer to STARTUPINFO structure
+                       &pi)                              // Pointer to PROCESS_INFORMATION structure
+    )
+    {
+        char errBuff[250];
+        if (Glumity_GetErrorMessage(GetLastError(), errBuff, sizeof(errBuff)))
+            GlumityPlugin_printf("CreateProcess failed: %s\n", MY_PLUGIN, errBuff);
+        return;
+    }
+
+    // Wait until child process exits.
+    WaitForSingleObject(pi.hProcess, INFINITE);
+
+    // Close process and thread handles.
+    CloseHandle(pi.hProcess);
+    CloseHandle(pi.hThread);
+}
+
+void Setup()
 {
     // Wait for dumper to finish initializing, crucial to avoid crashes
     GLUMITYV2_DUMPER_WAITFOR_INIT(dumperExports);
@@ -57,11 +93,14 @@ void MakeHooks()
         // Make a hook
         Hooks_Install(GetFullUrlPtr, MainReferencesUpdatePtr, CheckIfOwnedPtr);
     }
+
+    // Launch the custom server
+    LaunchCustomServer();
 }
 
 GLUMITYV2_PLUGIN_ENTRY
 {
-    GLUMITYV2_PLUGIN_THREADRUN(MakeHooks, 0);
+    GLUMITYV2_PLUGIN_THREADRUN(Setup, 0);
 }
 
 GLUMITYV2_PLUGIN_EXIT

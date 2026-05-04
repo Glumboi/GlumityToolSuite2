@@ -28,7 +28,7 @@ void Empyrean_HouseFlipper2_MoneyBalance_DecreaseBudget_hook(DWORD *__this, int3
     moneyToSpend = 1.000000;
 }
 
-void MakeHooks()
+void Setup()
 {
     GLUMITYV2_DUMPER_WAITFOR_INIT(exports);
 
@@ -82,7 +82,7 @@ void MakeHooks()
 
 GLUMITYV2_PLUGIN_ENTRY
 {
-    GLUMITYV2_PLUGIN_THREADRUN(MakeHooks, 0);
+    GLUMITYV2_PLUGIN_THREADRUN(Setup, 0);
 }
 
 GLUMITYV2_PLUGIN_EXIT
