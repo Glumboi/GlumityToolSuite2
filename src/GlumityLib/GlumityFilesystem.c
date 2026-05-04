@@ -1,33 +1,5 @@
-#include "Helpers.h"
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <windows.h>
-
-void Glumity_printf(const char *fmt, ...)
-{
-    // determine required buffer size
-    va_list args;
-    va_start(args, fmt);
-    int len = vsnprintf(NULL, 0, fmt, args);
-    va_end(args);
-    if (len < 0)
-        return;
-
-    // format message
-    char *msg =
-        (char *)malloc(len + 1); // or use heap allocation if implementation doesn't support VLAs
-
-    va_start(args, fmt);
-    vsnprintf(msg, len + 1, fmt, args);
-    va_end(args);
-
-    // call myFunction
-    printf("%s%s", GLUMITY_PRINT_HEADER, msg);
-
-    free(msg);
-}
+#include "GlumityFilesystem.h"
+#include "GlumityLib.h"
 
 char **Glumity_FileSystem_GetAllDllFilesFromDirectory(const char *dir, int *outCount)
 {
@@ -94,7 +66,7 @@ char **Glumity_FileSystem_GetAllDllFilesFromDirectory(const char *dir, int *outC
     DWORD err = GetLastError();
     if (err != ERROR_NO_MORE_FILES)
     {
-        Glumity_printf("FindNextFile failed (%lu)\n", err);
+        GlumityPlugin_printf("FindNextFile failed (%lu)\n", GLUMITYLIB_PRINT_HEADER, err);
     }
 
     FindClose(hFind);
@@ -176,7 +148,7 @@ char **Glumity_FileSystem_GetAllFilesWithExtensionFromDirectory(const char *dir,
     DWORD err = GetLastError();
     if (err != ERROR_NO_MORE_FILES)
     {
-        Glumity_printf("FindNextFile failed (%lu)\n", err);
+        GlumityPlugin_printf("FindNextFile failed (%lu)\n", GLUMITYLIB_PRINT_HEADER, err);
     }
 
     FindClose(hFind);

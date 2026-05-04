@@ -1,44 +1,10 @@
 #include "GlumityLib.h"
 
-void GlumityPlugin_printf(const char *fmt, const char *printHeaderInner, ...)
-{
-    va_list args;
-    va_start(args, printHeaderInner);
-    int len = vsnprintf(NULL, 0, fmt, args);
-    va_end(args);
-
-    if (len < 0)
-        return;
-
-    char *msg = (char *)malloc(len + 1);
-
-    va_start(args, printHeaderInner);
-    vsnprintf(msg, len + 1, fmt, args);
-    va_end(args);
-
-    printf("[%s]: %s", printHeaderInner, msg);
-
-    free(msg);
-}
-
-void GlumityV2DumperExports_Init(GlumityV2DumperExports *dumperExports)
-{
-    if (!dumperExports)
-        return;
-
-    HMODULE mod = GetModuleHandleA(GLUMITYV2_DUMPER_MODULE);
-    if (!mod)
-    {
-        Glumity_printf("Failed to init GlumityV2IL2CPPDumper exports, make sure the GlumityV2IL2CPPDumper plugin is installed and loaded!\n");
-        return;
-    }
-
-    dumperExports->GlumityV2Dumper_GetFunctionPointer = INIT_GLUMITYV2_EXPORT(mod, "GlumityV2Dumper_GetFunctionPointer", GlumityV2Dumper_GetFunctionPointer_t);
-    dumperExports->GlumityV2Dumper_GetFunctionPointer_FromModule = INIT_GLUMITYV2_EXPORT(mod, "GlumityV2Dumper_GetFunctionPointer_FromModule", GlumityV2Dumper_GetFunctionPointer_FromModule_t);
-    dumperExports->GlumityV2Dumper_GetFunctionPointerWithPattern = INIT_GLUMITYV2_EXPORT(mod, "GlumityV2Dumper_GetFunctionPointerWithPattern", GlumityV2Dumper_GetFunctionPointerWithPattern_t);
-    dumperExports->GlumityV2Dumper_GetFunctionPointer_Global = INIT_GLUMITYV2_EXPORT(mod, "GlumityV2Dumper_GetFunctionPointer_Global", GlumityV2Dumper_GetFunctionPointer_Global_t);
-    dumperExports->GlumityV2Dumper_WaitForDumper = INIT_GLUMITYV2_EXPORT(mod, "GlumityV2Dumper_WaitForDumper", GlumityV2Dumper_WaitForDumper_t);
-}
+#include <windows.h>
+#include <stdio.h>
+#include <assert.h>
+#include <stddef.h>
+#include <MinHook.h>
 
 char *IL2CPP_String_ToCString(GlumityV2_il2cppStr *str)
 {
@@ -94,8 +60,8 @@ void IL2CPP_ResolveFunctions()
     _il2cpp_class_get_method_from_name = (il2cpp_class_get_method_from_name_t)GetProcAddress(mod, "il2cpp_class_get_method_from_name");
 }
 
-Il2CppObject *IL2CPP_InvokeMethod(struct IL2CPP_Class *klass, const char *method_name,
-                            void *instance, void **params)
+struct IL2CPP_Object *IL2CPP_InvokeMethod(struct IL2CPP_Class *klass, const char *method_name,
+                                          void *instance, void **params)
 {
     const struct IL2CPP_MethodInfo *method =
         _il2cpp_class_get_method_from_name(klass, method_name, -1);
@@ -103,11 +69,11 @@ Il2CppObject *IL2CPP_InvokeMethod(struct IL2CPP_Class *klass, const char *method
     if (!method)
         return NULL;
 
-    Il2CppException *exception = NULL;
+    struct IL2CPP_Exception *exception = NULL;
 
     // 2. Invoke the method
     // For static methods, pass NULL as the 'instance'
-    Il2CppObject *result =
+    struct IL2CPP_Object *result =
         _il2cpp_runtime_invoke(method, instance, params, &exception);
 
     if (exception)

@@ -7,6 +7,8 @@
 #include <stddef.h>
 #include <MinHook.h>
 
+#define GLUMITYLIB_PRINT_HEADER "GlumityV2Lib"
+
 #define GLUMITYV2_DUMPER_MODULE "GlumityV2IL2CPPDumper"
 #define GLUMITYV2_DUMPER_DLL "GlumityV2IL2CPPDumper.dll"
 
@@ -14,112 +16,35 @@
 #define GLUMITYV2_DLL "GlumityToolSuite2.dll"
 
 #ifdef __cplusplus
+#define EXPORT extern "C" __declspec(dllexport)
+#else
+#define EXPORT __declspec(dllexport)
+#endif
+#ifdef __cplusplus
 extern "C"
 {
 #endif
 
-#include "../MainLoader/PluginLoader.h"
-#include "../MainLoader/Plugin.h"
-
-    /// @brief Printf for glumity plugin specific code, uses malloc and free for a temp char*, caller doesn't need to manage
-    /// @param fmt
-    /// @param
-    void GlumityPlugin_printf(const char *fmt, const char *printHeaderInner, ...);
-
-    /// @brief entry point of plugins, passes a handle of glumity's loaded main dll (the loader)
-    typedef void (*GlumityPlugin_EntryPoint)();
-
-#define GLUMITYV2_PLUGIN_ENTRY \
-    EXPORT void GlumityMain()
-
-    /// @brief exit point of plugins, get's called on application termination/loader termination
-    typedef void (*GlumityPlugin_ExitPoint)();
-
-#define GLUMITYV2_PLUGIN_EXIT \
-    EXPORT void GlumityExit()
+#include "GlumityPluginLoader.h"
+#include "GlumityPlugin.h"
+#include "GlumityFilesystem.h"
+#include "GlumityDumper.h"
+#include "GlumityHooking.h"
 
 #define INIT_GLUMITYV2_EXPORT(mod, exportName, exportType) \
     (exportType) GetProcAddress(mod, exportName);
 
-    typedef void *(*GlumityV2Dumper_GetFunctionPointer_t)(const char *, const char *);
-    typedef void *(*GlumityV2Dumper_GetFunctionPointerWithPattern_t)(HMODULE, const char *);
-    typedef void *(*GlumityV2Dumper_GetFunctionPointer_FromModule_t)(const char *, const char *, const char *);
-    typedef void *(*GlumityV2Dumper_GetFunctionPointer_Global_t)(const char *, const char *);
-    typedef void (*GlumityV2Dumper_WaitForDumper_t)();
+    typedef void *(*il2cpp_domain_get_t)();
+    typedef void *(*il2cpp_thread_attach_t)(void *domain);
+    typedef void *(*il2cpp_runtime_invoke_t)(void *method, void *obj, void **params, void **exc);
+    typedef void *(*il2cpp_class_get_method_from_name_t)(void *klass, const char *name, int argsCount);
 
-    typedef struct
-    {
-        GlumityV2Dumper_GetFunctionPointer_t GlumityV2Dumper_GetFunctionPointer;
-        GlumityV2Dumper_GetFunctionPointerWithPattern_t GlumityV2Dumper_GetFunctionPointerWithPattern;
-        GlumityV2Dumper_GetFunctionPointer_FromModule_t GlumityV2Dumper_GetFunctionPointer_FromModule;
-        GlumityV2Dumper_GetFunctionPointer_Global_t GlumityV2Dumper_GetFunctionPointer_Global;
-        GlumityV2Dumper_WaitForDumper_t GlumityV2Dumper_WaitForDumper;
-    } GlumityV2DumperExports;
+    // Global il2cpp function pointers
+    il2cpp_domain_get_t _il2cpp_domain_get;
+    il2cpp_thread_attach_t _il2cpp_thread_attach;
+    il2cpp_runtime_invoke_t _il2cpp_runtime_invoke;
+    il2cpp_class_get_method_from_name_t _il2cpp_class_get_method_from_name;
 
-    // Only works if dumper plugin is loaded
-    void GlumityV2DumperExports_Init(GlumityV2DumperExports *dumperExports);
-
-#define GLUMITYV2_INIT_HOOKING(pluginName, onFail)                           \
-    if (MH_Initialize() != MH_OK)                                            \
-    {                                                                        \
-        GlumityPlugin_printf("Failed to initialize Minhook!\n", pluginName); \
-        onFail;                                                              \
-    }                                                                        \
-    else
-
-#define GLUMITYV2_GAME_HOOK_CREATE(name, original, hook)  \
-    {                                                     \
-        MH_STATUS stat = MH_CreateHook(                   \
-            (LPVOID *)(original),                         \
-            &hook,                                        \
-            (LPVOID *)&original);                         \
-        if (stat == MH_OK)                                \
-            Glumity_printf("Created a hook: %s\n", name); \
-    }
-
-#define GLUMITYV2_GAME_HOOK_ENABLE_ALL(pluginName)                    \
-    {                                                                 \
-        MH_STATUS stat = MH_EnableHook(MH_ALL_HOOKS);                 \
-        if (stat == MH_OK)                                            \
-            GlumityPlugin_printf("Enabled all hooks!\n", pluginName); \
-    }
-
-#define GLUMITYV2_GAME_HOOK_ENABLE(name, original)        \
-    {                                                     \
-        MH_STATUS stat = MH_EnableHook(original);         \
-        if (stat == MH_OK)                                \
-            Glumity_printf("Enabled a hook: %s\n", name); \
-    }
-
-#define GLUMITYV2_GAME_HOOK_TYPE(retType, name) typedef retType(*name)
-
-    // Recommended to use this to run most code,
-    // specially function hooking since you have to rely on the dumper being loaded
-#define GLUMITYV2_PLUGIN_THREADRUN(function, pParam)                                     \
-    freopen("CONOUT$", "w", stdout); /* enable plugin printing */                        \
-    HANDLE hThread = CreateThread(0, 0, (LPTHREAD_START_ROUTINE)function, pParam, 0, 0); \
-    if (hThread)                                                                         \
-        CloseHandle(hThread);
-
-// Declare to use it here already
-void IL2CPP_ResolveFunctions();
-
-#define GLUMITYV2_DUMPER_WAITFOR_INIT(dumperExports)   \
-    if (!dumperExports.GlumityV2Dumper_WaitForDumper)  \
-    {                                                  \
-        GlumityV2DumperExports_Init(&dumperExports);   \
-    }                                                  \
-    if (dumperExports.GlumityV2Dumper_WaitForDumper)   \
-    {                                                  \
-        dumperExports.GlumityV2Dumper_WaitForDumper(); \
-        IL2CPP_ResolveFunctions();                     \
-    }
-
-#define GLUMITYV2_DUMPER_GET_GAME_FUNCTION(className, functionName, dumperExports) \
-    dumperExports.GlumityV2Dumper_GetFunctionPointer(className, functionName);
-
-#define GLUMITYV2_PLUGIN_INIT_IL2CPP \
-    if (IL2CPP::Initialize(true) && IL2CPP::Thread::Attach(IL2CPP::Domain::Get()))
 #ifdef __cplusplus
 }
 #endif
@@ -382,21 +307,10 @@ char *IL2CPP_String_ToCString(GlumityV2_il2cppStr *str);
 /// @return A pointer to a newly allocated il2cpp string
 GlumityV2_il2cppStr *IL2CPP_String_Create(const char *input);
 
-typedef struct Il2CppObject Il2CppObject;
-typedef struct Il2CppException Il2CppException;
+struct IL2CPP_Object;
+struct IL2CPP_Exception;
 
-typedef void *(*il2cpp_domain_get_t)();
-typedef void *(*il2cpp_thread_attach_t)(void *domain);
-typedef void *(*il2cpp_runtime_invoke_t)(void *method, void *obj, void **params, void **exc);
-typedef void *(*il2cpp_class_get_method_from_name_t)(void *klass, const char *name, int argsCount);
-
-// Global function pointers
-il2cpp_domain_get_t _il2cpp_domain_get;
-il2cpp_thread_attach_t _il2cpp_thread_attach;
-il2cpp_runtime_invoke_t _il2cpp_runtime_invoke;
-il2cpp_class_get_method_from_name_t _il2cpp_class_get_method_from_name;
-
-Il2CppObject *IL2CPP_InvokeMethod(struct IL2CPP_Class *klass, const char *method_name, void *instance, void **params);
+struct IL2CPP_Object *IL2CPP_InvokeMethod(struct IL2CPP_Class *klass, const char *method_name, void *instance, void **params);
 void IL2CPP_ResolveFunctions();
 
 #endif

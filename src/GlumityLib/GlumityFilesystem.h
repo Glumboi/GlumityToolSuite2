@@ -1,20 +1,8 @@
-#ifndef HELPERS_H
-#define HELPERS_H
+#ifndef GLUMITY_FILESYSTEM_H
+#define GLUMITY_FILESYSTEM_H
 
 #include <windows.h>
-
-#ifdef __cplusplus
-#define EXPORT extern "C" __declspec(dllexport)
-#else
-#define EXPORT __declspec(dllexport)
-#endif
-
-#define GLUMITY_PRINT_HEADER "[GlumityV2]: "
-
-/// @brief Printf for glumity specific code, uses malloc and free for a temp char*, caller doesn't need to manage
-/// @param fmt
-/// @param
-void Glumity_printf(const char *fmt, ...);
+#include <stdio.h>
 
 /// @brief Caller has to free
 /// @param dir
@@ -22,7 +10,6 @@ void Glumity_printf(const char *fmt, ...);
 /// @return allocated using malloc/realloc
 char **Glumity_FileSystem_GetAllDllFilesFromDirectory(const char *dir, int *outCount);
 char **Glumity_FileSystem_GetAllFilesWithExtensionFromDirectory(const char *dir, const char *extension, int *outCount);
-
 const char *Glumity_GetFileNameFromPath(const char *path);
 
 #endif
