@@ -22,7 +22,4 @@ typedef struct
     HMODULE hDll;
 } GlumityPlugin;
 
-GlumityPlugin GlumityPlugin_LoadPlugin(const char *dllPath);
-void GlumityPlugin_FreePlugin(GlumityPlugin *plugin);
-
 #endif

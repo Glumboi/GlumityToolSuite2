@@ -25,8 +25,8 @@ extern "C"
 {
 #endif
 
-#include "../MainLoader/PluginLoader.h"
-#include "../MainLoader/Plugin.h"
+#include "PluginLoader.h"
+#include "Plugin.h"
 
     /// @brief Caller has to free
     /// @param dir
@@ -42,14 +42,8 @@ extern "C"
     /// @param
     void GlumityPlugin_printf(const char *fmt, const char *printHeaderInner, ...);
 
-    /// @brief entry point of plugins, passes a handle of glumity's loaded main dll (the loader)
-    typedef void (*GlumityPlugin_EntryPoint)();
-
 #define GLUMITYV2_PLUGIN_ENTRY \
     EXPORT void GlumityMain()
-
-    /// @brief exit point of plugins, get's called on application termination/loader termination
-    typedef void (*GlumityPlugin_ExitPoint)();
 
 #define GLUMITYV2_PLUGIN_EXIT \
     EXPORT void GlumityExit()
