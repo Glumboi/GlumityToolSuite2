@@ -3,7 +3,7 @@
 
 #include <windows.h>
 #include <stdio.h>
-#include "Plugin.h"
+#include "GlumityPlugin.h"
 
 #define DEFAULT_PLUGINCAP 10 * sizeof(GlumityPlugin)
 
