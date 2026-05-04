@@ -29,6 +29,7 @@ void MainReferences_Update_hook(struct MainReferences *_this)
     MainReferences_Update_o(_this);
 }
 
+
 struct IL2CPP_String *PlayFabApiSettings_GetFullUrl_hook(struct PlayFabApiSettings *_this, struct IL2CPP_String *apiCall, void **getParams)
 {
 
@@ -77,14 +78,17 @@ struct IL2CPP_String *PlayFabApiSettings_GetFullUrl_hook(struct PlayFabApiSettin
 
 void Hooks_PreInstall()
 {
-    char *file[MAX_PATH];
-    GetCurrentDirectoryA(sizeof(file), (LPSTR)&file[0]);
+    char file[MAX_PATH];
+
+    GetCurrentDirectoryA(sizeof(file), file);
     strcat(file, "\\Plugins\\newUrl.txt");
+
     FILE *f = fopen(file, "r");
     GlumityPlugin_printf("Trying to read new url from: %s\n", MY_PLUGIN, file);
+
     if (!f)
     {
-        FILE *f = fopen(file, "w");
+        f = fopen(file, "w");
         if (!f)
         {
             GlumityPlugin_printf("Failed to create newUrl.txt, aborting hooking!\n", MY_PLUGIN);
@@ -95,7 +99,8 @@ void Hooks_PreInstall()
         fclose(f);
         return;
     }
-    fscanf(f, "%s", urlReroute);
+
+    fscanf(f, "%255s", urlReroute); // adjust size
     fclose(f);
 }
 

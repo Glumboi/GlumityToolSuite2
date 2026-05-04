@@ -20,8 +20,9 @@ void MainReferences_Update_hook(struct MainReferences *_this);
 
 typedef struct IL2CPP_String *(*PlayFabApiSettings_GetFullUrl_t)(struct PlayFabApiSettings *, struct IL2CPP_String *, void **);
 PlayFabApiSettings_GetFullUrl_t PlayFabApiSettings_GetFullUrl_o;
-static char *urlReroute = "http://localhost:8000";
 struct IL2CPP_String *PlayFabApiSettings_GetFullUrl_hook(struct PlayFabApiSettings *_this, struct IL2CPP_String *apiCall, void **getParams);
+
+static char urlReroute[256];
 
 void Hooks_PreInstall();
 void Hooks_Install(void *PlayFabApiSettingsGetFullUrlPtr, void *MainReferencesUpdatePtr, void *DinoInfoCheckIfOwnedPtr);
