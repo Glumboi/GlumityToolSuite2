@@ -101,6 +101,9 @@ void Hooks_PreInstall()
 
     fscanf(f, "%255s", urlReroute); 
     fclose(f);
+
+    GlumityPlugin_printf("urlReroute: %s\n", MY_PLUGIN, urlReroute);
+
 }
 
 void Hooks_Install(void *PlayFabApiSettingsGetFullUrlPtr, void *MainReferencesUpdatePtr, void *DinoInfoCheckIfOwnedPtr)
