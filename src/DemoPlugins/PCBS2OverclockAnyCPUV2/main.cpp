@@ -41,7 +41,7 @@ bool BiosConfig_ChangeCPUMultiplier_hook(DWORD *__this, int32_t dir, const DWORD
     return true;
 }
 
-void MakeHooks()
+void Setup()
 {
     GLUMITYV2_DUMPER_WAITFOR_INIT(exports);
 
@@ -82,7 +82,7 @@ void MakeHooks()
 
 GLUMITYV2_PLUGIN_ENTRY
 {
-    GLUMITYV2_PLUGIN_THREADRUN(MakeHooks, 0);
+    GLUMITYV2_PLUGIN_THREADRUN(Setup, 0);
 }
 
 GLUMITYV2_PLUGIN_EXIT

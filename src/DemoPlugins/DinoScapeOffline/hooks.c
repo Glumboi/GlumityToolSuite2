@@ -32,7 +32,6 @@ void MainReferences_Update_hook(struct MainReferences *_this)
 
 struct IL2CPP_String *PlayFabApiSettings_GetFullUrl_hook(struct PlayFabApiSettings *_this, struct IL2CPP_String *apiCall, void **getParams)
 {
-
 #ifdef DEBUG
     GlumityPlugin_printf("PlayFabApiSettings_GetFullUrl_hook called!\n", MY_PLUGIN);
 #endif
@@ -100,8 +99,11 @@ void Hooks_PreInstall()
         return;
     }
 
-    fscanf(f, "%255s", urlReroute); // adjust size
+    fscanf(f, "%255s", urlReroute); 
     fclose(f);
+
+    GlumityPlugin_printf("urlReroute: %s\n", MY_PLUGIN, urlReroute);
+
 }
 
 void Hooks_Install(void *PlayFabApiSettingsGetFullUrlPtr, void *MainReferencesUpdatePtr, void *DinoInfoCheckIfOwnedPtr)

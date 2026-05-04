@@ -31,6 +31,8 @@ extern "C"
 #include "GlumityDumper.h"
 #include "GlumityHooking.h"
 
+BOOL Glumity_GetErrorMessage(DWORD dwErrorCode, LPTSTR pBuffer, DWORD cchBufferLength);
+
 #define INIT_GLUMITYV2_EXPORT(mod, exportName, exportType) \
     (exportType) GetProcAddress(mod, exportName);
 
