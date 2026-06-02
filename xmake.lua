@@ -59,6 +59,7 @@ target("IL2CPPAPIBridge")
     add_linkdirs("build")
     add_deps("GlumityLib")
     add_packages("minhook")
+    set_languages("c++17")
     add_includedirs("src/GlumityLib")
     add_includedirs("src/IL2CPPResolver")
 

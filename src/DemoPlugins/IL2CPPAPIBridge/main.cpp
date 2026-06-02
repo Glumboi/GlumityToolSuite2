@@ -2,9 +2,12 @@
 #include <string.h>
 #include <map>
 #include <string>
+#include <filesystem>
 
 #define MY_PLUGIN "IL2CPPAPIBridge"
 #define GAME_ASSEMBLY "GameAssembly.dll"
+#define VERBOSE_DEFINITION "Plugins\\VERBOSE_BRIDGE"
+bool gb_verboseBridge = false;
 
 std::map<std::string, GlumityGeneric_Func> apiFuncs;
 
@@ -12,7 +15,7 @@ GLUMITYV2_GAME_HOOK_TYPE(void *, il2cpp_object_new_t)(IL2CPP_Class *klass);
 il2cpp_object_new_t target_il2cpp_object_new = nullptr;
 
 GLUMITYV2_GAME_HOOK_TYPE(void *, il2cpp_runtime_invoke_t2)(IL2CPP_MethodInfo *method, void *obj, void **params, void **exc);
-il2cpp_runtime_invoke_t2 target_il2cpp_runtime_invoke = nullptr; // t2 has no specific meaning, just avoiding redefnition with glumitylib (idk, might be good to leave it like this)
+il2cpp_runtime_invoke_t2 target_il2cpp_runtime_invoke = nullptr; // t2 has no specific meaning, just to avoid redefinition and keep this as contained as possible
 
 void LoadIl2CPP_API(HMODULE hModule)
 {
@@ -50,15 +53,17 @@ void LoadIl2CPP_API(HMODULE hModule)
 
 void *il2cpp_object_new_hook(IL2CPP_Class *klass)
 {
-    if (klass->name)
+    if (klass && klass->name && gb_verboseBridge)
         GlumityPlugin_printf("An object is being allocated! (%s)\n", MY_PLUGIN, klass->name);
+
     return target_il2cpp_object_new(klass);
 }
 
 void *il2cpp_runtime_invoke_hook(IL2CPP_MethodInfo *method, void *obj, void **params, void **exc)
 {
-    if (method->name)
+    if (method && method->name && gb_verboseBridge)
         GlumityPlugin_printf("A method is being executed! (%s)\n", MY_PLUGIN, method->name);
+
     return target_il2cpp_runtime_invoke(method, obj, params, exc);
 }
 
@@ -86,12 +91,23 @@ VOID Setup()
 
     GLUMITYV2_INIT_HOOKING(MY_PLUGIN, return)
     {
-        GlumityPlugin_printf("Initialized Minhook backend core.\n", MY_PLUGIN);
+        GlumityPlugin_printf("Initialized Minhook!\n", MY_PLUGIN);
     }
 
     GLUMITYV2_GAME_HOOK_CREATE("il2cpp_object_new", target_il2cpp_object_new, il2cpp_object_new_hook);
     GLUMITYV2_GAME_HOOK_CREATE("il2cpp_runtime_invoke", target_il2cpp_runtime_invoke, il2cpp_runtime_invoke_hook);
     GLUMITYV2_GAME_HOOK_ENABLE_ALL(MY_PLUGIN);
+
+    // verbosity - debug prints
+    char exePath[MAX_PATH];
+    GetModuleFileNameA(NULL, exePath, MAX_PATH);
+    std::filesystem::path gameDir = std::filesystem::path(exePath).parent_path();
+    std::filesystem::path verboseCheckPath = gameDir / VERBOSE_DEFINITION;
+    gb_verboseBridge = std::filesystem::exists(verboseCheckPath);
+    GlumityPlugin_printf("Verbose: %d (Checked path: %s)\n",
+                         MY_PLUGIN,
+                         gb_verboseBridge,
+                         verboseCheckPath.string().c_str());
 }
 
 GLUMITYV2_PLUGIN_ENTRY
