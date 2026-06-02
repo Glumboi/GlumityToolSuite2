@@ -64,10 +64,48 @@ void *il2cpp_object_new_hook_v(IL2CPP_Class *klass)
     return target_il2cpp_object_new(klass);
 }
 
+uint8_t prntCntr = 0; // for color alternating
+
+const char *bannedMethods[] = {
+    "Update",
+    "FixedUpdate",
+    "GetRenderFrameInterval",
+    "NotifyBeforeUpdate",
+    "InvokeMoveNext",
+    "get_Current",
+    "DoRenderLoop_Internal"};
+const int totalBanned = sizeof(bannedMethods) / sizeof(bannedMethods[0]);
+
 void *il2cpp_runtime_invoke_hook_v(IL2CPP_MethodInfo *method, void *obj, void **params, void **exc)
 {
-    if (method && method->name && gb_verboseBridge)
-        GLUMITY_PRINT_COLOR(CON_CYAN, "A method is being executed! (%s)\n", MY_PLUGIN, method->name);
+    if (method && method->name && method->klass && method->klass->name && gb_verboseBridge)
+    {
+        bool isBanned = false;
+
+        for (int i = 0; i < totalBanned; i++)
+        {
+            if (strcmp(method->name, bannedMethods[i]) == 0)
+            {
+                isBanned = true;
+                break;
+            }
+        }
+
+        if (!isBanned)
+        {
+            if (prntCntr % 2 == 0)
+            {
+                GLUMITY_PRINT_COLOR(CON_CYAN, "A method is being executed! (%s - %s | %p)\n",
+                                    MY_PLUGIN, method->klass->name, method->name, method->methodPointer);
+            }
+            else
+            {
+                GLUMITY_PRINT_COLOR(CON_RESET, "A method is being executed! (%s - %s | %p)\n",
+                                    MY_PLUGIN, method->klass->name, method->name, method->methodPointer);
+            }
+            prntCntr++;
+        }
+    }
 
     return target_il2cpp_runtime_invoke(method, obj, params, exc);
 }
