@@ -2,23 +2,40 @@
 #define PLUGIN_H
 
 #include <Windows.h>
-
 #include <string.h>
 #include <stdint.h>
 #include <stdio.h>
 
-#define DLL_PATH_MAX 260
+#include "GlumityConsole.h"
 
-/// @brief entry point of plugins, passes a handle of glumity's loaded main dll (the loader)
-typedef void (*GlumityPlugin_EntryPoint)();
-typedef void (*GlumityPlugin_ExitPoint)();
-typedef void (*GlumityGeneric_Func)();
+#define DLL_PATH_MAX 260
+#define GLUMITY_MAX_DEPS 16
+
+// Handle dll export decorator for pure C compilation
+#ifndef EXPORT
+#ifdef __cplusplus
+#define EXPORT extern "C" __declspec(dllexport)
+#else
+#define EXPORT __declspec(dllexport)
+#endif
+#endif
+
+typedef void (*GlumityPlugin_EntryPoint)(void);
+typedef void (*GlumityPlugin_ExitPoint)(void);
+typedef void (*GlumityGeneric_Func)(void);
+typedef void (*GlumityDependencyErrorCallback)(const char *failedDllName);
+
+#define GLUMITYV2_VERIFY_DEPENDENCY(dllName)                                           \
+    if (!GetModuleHandleA(dllName))                                                    \
+        GLUMITY_PRINT_COLOR(CON_RED, "Missing dependency: %s, functionality may be impaired!\n", MY_PLUGIN, dllName); \
+    else                                                                               \
+        GLUMITY_PRINT_COLOR(CON_GREEN, "Found dependency: %s!\n", MY_PLUGIN, dllName);
 
 #define GLUMITYV2_PLUGIN_ENTRY \
-    EXPORT void GlumityMain()
+    EXPORT void GlumityMain(void)
 
 #define GLUMITYV2_PLUGIN_EXIT \
-    EXPORT void GlumityExit()
+    EXPORT void GlumityExit(void)
 
 // Recommended to use this to run most code,
 // specially function hooking since you have to rely on the dumper being loaded
@@ -32,6 +49,27 @@ typedef void (*GlumityGeneric_Func)();
 /// @param fmt
 /// @param
 void GlumityPlugin_printf(const char *fmt, const char *printHeaderInner, ...);
+
+/**
+ * @brief Prints a message in a specific color and immediately restores the original color layout.
+ * @param color Standard Windows console attribute color code (e.g., CON_RED)
+ * @param fmt Format string (just like printf)
+ * @param ... Variable arguments for formatting
+ */
+#define GLUMITY_PRINT_COLOR(color, fmt, ...)                   \
+    do                                                         \
+    {                                                          \
+        HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);     \
+        CONSOLE_SCREEN_BUFFER_INFO csbi;                       \
+        WORD originalAttributes = CON_RESET;                   \
+        if (GetConsoleScreenBufferInfo(hConsole, &csbi))       \
+        {                                                      \
+            originalAttributes = csbi.wAttributes;             \
+        }                                                      \
+        SetConsoleTextAttribute(hConsole, color);              \
+        GlumityPlugin_printf(fmt, ##__VA_ARGS__);              \
+        SetConsoleTextAttribute(hConsole, originalAttributes); \
+    } while (0)
 
 typedef struct
 {

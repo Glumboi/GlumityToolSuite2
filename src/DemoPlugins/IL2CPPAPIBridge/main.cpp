@@ -39,7 +39,7 @@ void LoadIl2CPP_API(HMODULE hModule)
     WORD *nameOrdinals = (WORD *)((BYTE *)hModule + exportDir->AddressOfNameOrdinals);
     DWORD *functionAddresses = (DWORD *)((BYTE *)hModule + exportDir->AddressOfFunctions);
 
-    GlumityPlugin_printf("Exported Functions (%d named functions):\n", MY_PLUGIN, exportDir->NumberOfNames);
+    GLUMITY_PRINT_COLOR(CON_YELLOW, "Exported Functions (%d named functions):\n", MY_PLUGIN, exportDir->NumberOfNames);
 
     for (DWORD i = 0; i < exportDir->NumberOfNames; i++)
     {
@@ -47,67 +47,96 @@ void LoadIl2CPP_API(HMODULE hModule)
         WORD ordinal = nameOrdinals[i];
         void *functionAddress = (BYTE *)hModule + functionAddresses[ordinal];
         apiFuncs[functionName] = (GlumityGeneric_Func)functionAddress;
-        GlumityPlugin_printf(" - %s [At: %p]\n", MY_PLUGIN, functionName, functionAddress);
+        if (i % 2 == 0)
+        {
+            GlumityPlugin_printf(" - %s [At: %p]\n", MY_PLUGIN, functionName, functionAddress);
+        }
+        else
+            GLUMITY_PRINT_COLOR(CON_CYAN, " - %s [At: %p]\n", MY_PLUGIN, functionName, functionAddress);
     }
+}
+
+void *il2cpp_object_new_hook_v(IL2CPP_Class *klass)
+{
+    if (klass && klass->name && gb_verboseBridge)
+        GLUMITY_PRINT_COLOR(CON_CYAN, "An object is being allocated! (%s)\n", MY_PLUGIN, klass->name);
+
+    return target_il2cpp_object_new(klass);
+}
+
+void *il2cpp_runtime_invoke_hook_v(IL2CPP_MethodInfo *method, void *obj, void **params, void **exc)
+{
+    if (method && method->name && gb_verboseBridge)
+        GLUMITY_PRINT_COLOR(CON_CYAN, "A method is being executed! (%s)\n", MY_PLUGIN, method->name);
+
+    return target_il2cpp_runtime_invoke(method, obj, params, exc);
 }
 
 void *il2cpp_object_new_hook(IL2CPP_Class *klass)
 {
-    if (klass && klass->name && gb_verboseBridge)
-        GlumityPlugin_printf("An object is being allocated! (%s)\n", MY_PLUGIN, klass->name);
-
     return target_il2cpp_object_new(klass);
 }
 
 void *il2cpp_runtime_invoke_hook(IL2CPP_MethodInfo *method, void *obj, void **params, void **exc)
 {
-    if (method && method->name && gb_verboseBridge)
-        GlumityPlugin_printf("A method is being executed! (%s)\n", MY_PLUGIN, method->name);
-
     return target_il2cpp_runtime_invoke(method, obj, params, exc);
+}
+
+VOID InitVerbosity()
+{
+    char exePath[MAX_PATH];
+    GetModuleFileNameA(NULL, exePath, MAX_PATH);
+    std::filesystem::path gameDir = std::filesystem::path(exePath).parent_path();
+    std::filesystem::path verboseCheckPath = gameDir / VERBOSE_DEFINITION;
+    gb_verboseBridge = std::filesystem::exists(verboseCheckPath);
+    GLUMITY_PRINT_COLOR(CON_YELLOW, "Verbose: %d (Checked path: %s)\n",
+                        MY_PLUGIN,
+                        gb_verboseBridge,
+                        verboseCheckPath.string().c_str());
 }
 
 VOID Setup()
 {
+    GLUMITYV2_VERIFY_DEPENDENCY("GlumityV2IL2CPPDumper");
     HMODULE hMod = GetModuleHandleA(GAME_ASSEMBLY);
     if (!hMod)
     {
-        GlumityPlugin_printf("Could not find unity IL2CPP GameAssembly.dll\n", MY_PLUGIN);
+        GLUMITY_PRINT_COLOR(CON_RED, "Could not find unity IL2CPP GameAssembly.dll\n", MY_PLUGIN);
         return;
     }
 
-    GlumityPlugin_printf("Found unity IL2CPP GameAssembly.dll (starting export parsing...)\n", MY_PLUGIN);
+    GLUMITY_PRINT_COLOR(CON_BLUE, "Found unity IL2CPP GameAssembly.dll (starting export parsing...)\n", MY_PLUGIN);
     LoadIl2CPP_API(hMod);
 
     if (apiFuncs.find("il2cpp_object_new") == apiFuncs.end() ||
         apiFuncs.find("il2cpp_runtime_invoke") == apiFuncs.end())
     {
-        GlumityPlugin_printf("Could not locate required internal API endpoints inside map!\n", MY_PLUGIN);
+        GLUMITY_PRINT_COLOR(CON_YELLOW, "Could not locate required internal API endpoints inside map!\n", MY_PLUGIN);
         return;
     }
 
     target_il2cpp_object_new = (il2cpp_object_new_t)apiFuncs["il2cpp_object_new"];
     target_il2cpp_runtime_invoke = (il2cpp_runtime_invoke_t2)apiFuncs["il2cpp_runtime_invoke"];
 
+    InitVerbosity();
+
     GLUMITYV2_INIT_HOOKING(MY_PLUGIN, return)
     {
-        GlumityPlugin_printf("Initialized Minhook!\n", MY_PLUGIN);
+        GLUMITY_PRINT_COLOR(CON_GREEN, "Initialized Minhook!\n", MY_PLUGIN);
     }
 
-    GLUMITYV2_GAME_HOOK_CREATE("il2cpp_object_new", target_il2cpp_object_new, il2cpp_object_new_hook);
-    GLUMITYV2_GAME_HOOK_CREATE("il2cpp_runtime_invoke", target_il2cpp_runtime_invoke, il2cpp_runtime_invoke_hook);
-    GLUMITYV2_GAME_HOOK_ENABLE_ALL(MY_PLUGIN);
+    if (gb_verboseBridge) // Hook to different hooks, to avoid performance cost if verbosity is not desired
+    {
+        GLUMITYV2_GAME_HOOK_CREATE("il2cpp_object_new", target_il2cpp_object_new, il2cpp_object_new_hook_v);
+        GLUMITYV2_GAME_HOOK_CREATE("il2cpp_runtime_invoke", target_il2cpp_runtime_invoke, il2cpp_runtime_invoke_hook_v);
+    }
+    else
+    {
+        GLUMITYV2_GAME_HOOK_CREATE("il2cpp_object_new", target_il2cpp_object_new, il2cpp_object_new_hook);
+        GLUMITYV2_GAME_HOOK_CREATE("il2cpp_runtime_invoke", target_il2cpp_runtime_invoke, il2cpp_runtime_invoke_hook);
+    }
 
-    // verbosity - debug prints
-    char exePath[MAX_PATH];
-    GetModuleFileNameA(NULL, exePath, MAX_PATH);
-    std::filesystem::path gameDir = std::filesystem::path(exePath).parent_path();
-    std::filesystem::path verboseCheckPath = gameDir / VERBOSE_DEFINITION;
-    gb_verboseBridge = std::filesystem::exists(verboseCheckPath);
-    GlumityPlugin_printf("Verbose: %d (Checked path: %s)\n",
-                         MY_PLUGIN,
-                         gb_verboseBridge,
-                         verboseCheckPath.string().c_str());
+    GLUMITYV2_GAME_HOOK_ENABLE_ALL(MY_PLUGIN);
 }
 
 GLUMITYV2_PLUGIN_ENTRY
