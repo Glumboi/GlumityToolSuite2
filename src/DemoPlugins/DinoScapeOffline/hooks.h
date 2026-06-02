@@ -10,15 +10,15 @@
 
 #define MY_PLUGIN "DinoScapeOffline"
 
-typedef struct BOOL (*DinoInfo_CheckIfOwned_t)(struct DinoInfo *, struct IL2CPP_MethodInfo *);
+GLUMITYV2_GAME_HOOK_TYPE(BOOL, DinoInfo_CheckIfOwned_t)(struct DinoInfo *, struct IL2CPP_MethodInfo *);
 DinoInfo_CheckIfOwned_t DinoInfo_CheckIfOwned_o;
 BOOL DinoInfo_CheckIfOwned_hook(struct DinoInfo *_this, struct IL2CPP_MethodInfo *mi);
 
-typedef void *(*MainReferences_Update_t)(struct MainReferences *);
+GLUMITYV2_GAME_HOOK_TYPE(void *, MainReferences_Update_t)(struct MainReferences *);
 MainReferences_Update_t MainReferences_Update_o;
 void MainReferences_Update_hook(struct MainReferences *_this);
 
-typedef struct IL2CPP_String *(*PlayFabApiSettings_GetFullUrl_t)(struct PlayFabApiSettings *, struct IL2CPP_String *, void **);
+GLUMITYV2_GAME_HOOK_TYPE(struct IL2CPP_String *, PlayFabApiSettings_GetFullUrl_t)(struct PlayFabApiSettings *, struct IL2CPP_String *, void **);
 PlayFabApiSettings_GetFullUrl_t PlayFabApiSettings_GetFullUrl_o;
 struct IL2CPP_String *PlayFabApiSettings_GetFullUrl_hook(struct PlayFabApiSettings *_this, struct IL2CPP_String *apiCall, void **getParams);
 

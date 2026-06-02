@@ -12,6 +12,7 @@
 /// @brief entry point of plugins, passes a handle of glumity's loaded main dll (the loader)
 typedef void (*GlumityPlugin_EntryPoint)();
 typedef void (*GlumityPlugin_ExitPoint)();
+typedef void (*GlumityGeneric_Func)();
 
 #define GLUMITYV2_PLUGIN_ENTRY \
     EXPORT void GlumityMain()

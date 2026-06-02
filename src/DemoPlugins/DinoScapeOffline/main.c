@@ -1,7 +1,7 @@
 #include <GlumityLib.h>
 #include "hooks.h"
 #include <string.h>
-
+#include "DinoScapeController.h"
 GlumityV2DumperExports dumperExports;
 
 HMODULE ForceGetHmodule(const char *moduleName, bool isInApplicationFolder)
