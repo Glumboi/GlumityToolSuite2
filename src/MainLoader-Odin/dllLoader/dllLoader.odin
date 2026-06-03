@@ -93,6 +93,27 @@ dllLoader_LoadOldDll :: proc(loader: ^dllLoader, file: string, requestFile: stri
 	cppDumper.old_plugin_supply_request(requestFile)
 }
 
+dllLoader_LoadIL2CPPAPIBridge_TCC :: proc(loader: ^dllLoader) {
+	tccPath := strings.concatenate({loader.pluginsPath, "/libtcc.dll"})
+
+	if !os.exists(tccPath) {
+		return
+	}
+
+	mod := windows.LoadLibraryA(strings.unsafe_string_to_cstring(tccPath))
+	if mod == nil {
+		lastErr := windows.GetLastError()
+		exports.Glumity_printf(
+			"Could not load libtcc [%s] error: %d\n",
+			strings.unsafe_string_to_cstring(tccPath),
+			lastErr,
+		)
+		return
+	}
+
+	loader.loadedDlls[tccPath] = mod
+}
+
 dllLoader_LoadIL2CPPDumper :: proc(loader: ^dllLoader) {
 	dumperPath := strings.concatenate({loader.pluginsPath, "/GlumityV2IL2CPPDumper.dll"})
 

@@ -1,11 +1,11 @@
 #ifndef GLUMITYLIB_H
 #define GLUMITYLIB_H
 
-#include <windows.h>
 #include <stdio.h>
 #include <assert.h>
 #include <stddef.h>
 #include <MinHook.h>
+#include <windef.h>
 
 #define GLUMITYLIB_PRINT_HEADER "GlumityV2Lib"
 

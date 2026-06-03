@@ -50,6 +50,8 @@ typedef void (*GlumityDependencyErrorCallback)(const char *failedDllName);
 /// @param
 void GlumityPlugin_printf(const char *fmt, const char *printHeaderInner, ...);
 
+void GetPluginDirectory(HMODULE hModule, char* outBuffer, DWORD bufferSize);
+
 /**
  * @brief Prints a message in a specific color and immediately restores the original color layout.
  * @param color Standard Windows console attribute color code (e.g., CON_RED)

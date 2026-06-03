@@ -9,3 +9,13 @@ void GlumityPlugin_printf(const char *fmt, const char *printHeaderInner, ...)
     vprintf(fmt, args);
     va_end(args);
 }
+
+void GetPluginDirectory(HMODULE hModule, char *outBuffer, DWORD bufferSize)
+{
+    GetModuleFileNameA(hModule, outBuffer, bufferSize);
+    char *lastSlash = strrchr(outBuffer, '\\');
+    if (lastSlash)
+    {
+        *(lastSlash + 1) = '\0'; 
+    }
+}
