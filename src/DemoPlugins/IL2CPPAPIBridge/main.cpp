@@ -209,7 +209,8 @@ void LoadAndRunSingleScript(const std::filesystem::path &scriptPath, const char 
     if (entryPoint != nullptr)
     {
         GLUMITY_PRINT_COLOR(CON_GREEN, "Executing Script Instance -> %s [%p]\n", TCC_HEADER, scriptPath.filename().string().c_str(), entryPoint);
-        entryPoint();
+        // Create a new Thread
+        GLUMITYV2_PLUGIN_THREADRUN(entryPoint, NULL);
     }
     else
     {
@@ -293,7 +294,6 @@ VOID Setup()
     char pathBuffer[MAX_PATH] = {0};
     GetPluginDirectory(hCurrentDll, pathBuffer, sizeof(pathBuffer));
 
-    // Ensure pathBuffer ends with a backslash
     size_t len = strlen(pathBuffer);
     if (len > 0 && pathBuffer[len - 1] != '\\')
     {
