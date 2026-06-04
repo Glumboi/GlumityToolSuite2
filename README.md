@@ -2,19 +2,23 @@
 A work in progress, lightweight-ish suite for modifying il2cpp unity games
 
 # Features/Startup steps
-- A "version.dll" preloader that will load the main ModLoader
-- A mainloader as Glumity "GlumityToolSuite2.dll"
+- A "version.dll" preloader
+- A mainloader as "GlumityToolSuite2.dll"
 - An IL2CPP runtime dumper as "GlumityV2IL2CPPDumper.dll" (it is more of a function pointer lookup helper than an actual dumper, might get expanded though)
 - An IL2CPPAPIBridge as "IL2CPPAPIBridge.dll", this is essentially our runtime compiler, embeds a tcc enviornment tailored to work with GlumityV2
 
 ## Requirements
+``` text
 - Target Unity Game compiled with IL2CPP (x64 only atm).
 - Windows 7 SP1 or higher (x64).
+``` 
 
 ## Build-Requirements
+``` text
 - Odin programming language
 - Xmake
 - Microsoft Visual C++ 20 (c++20 was specified in xmake, older versions may be needed too though, just try what sticks)
+```
 
 ## Build-Instructions - May become outdated soon-ish
 - To build the MainLoader-Odin (GlumityToolSuite2.dll) go to "src/MainLoader-Odin/" and run the build.bat (output is within "src/MainLoader-Odin/build)"
@@ -24,7 +28,7 @@ A work in progress, lightweight-ish suite for modifying il2cpp unity games
  - Works on its own already, heavily restricted and basically just a .dll loader - can be injected via the "version.dll" proxy or external tools, personal preference.
  
 # Hooking IL2CPP code (using IL2CPPDumper and GlumityLib)
-- "GlumityV2IL2CPPDumper.dll" to be present within the "Plugins" folder, for examples of utilizing it, refer to DemoPlugins or to the example JIT scripts.
+- "GlumityV2IL2CPPDumper.dll" to be present within the "Plugins" folder, for examples of utilizing it, refer to DemoPlugins or to the example [JIT scripts].(src\IL2CPPAPIBridge\default_bridge_env\jit_scripts)
 
 # Hooking IL2CPP code (using IL2CPPAPIBridge and GlumityLib)
 - "IL2CPPDumper.dll" in the "Plugins" folder and its requirements.
