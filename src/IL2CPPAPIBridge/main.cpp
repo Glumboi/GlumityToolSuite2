@@ -14,7 +14,17 @@ GlumityV2DumperExports dumperExports;
 #define TCC_HEADER "TCC"
 bool gb_verboseBridge = false;
 
-std::map<std::string, GlumityGeneric_Func> apiFuncs;
+std::map<std::string, GlumityGeneric_Func> apiFuncs = {
+    {"GlumityPlugin_printf", reinterpret_cast<GlumityGeneric_Func>(&GlumityPlugin_printf)},
+    {"MH_DisableHook", reinterpret_cast<GlumityGeneric_Func>(&MH_DisableHook)},
+    {"GlumityV2DumperExports_Init", reinterpret_cast<GlumityGeneric_Func>(&GlumityV2DumperExports_Init)},
+    {"IL2CPP_ResolveFunctions", reinterpret_cast<GlumityGeneric_Func>(&IL2CPP_ResolveFunctions)},
+    {"IL2CPP_String_ToCString", reinterpret_cast<GlumityGeneric_Func>(&IL2CPP_String_ToCString)},
+    {"MH_Initialize", reinterpret_cast<GlumityGeneric_Func>(&MH_Initialize)},
+    {"MH_CreateHook", reinterpret_cast<GlumityGeneric_Func>(&MH_CreateHook)},
+    {"MH_EnableHook", reinterpret_cast<GlumityGeneric_Func>(&MH_EnableHook)},
+    {"Glumity_GetErrorMessage", reinterpret_cast<GlumityGeneric_Func>(&Glumity_GetErrorMessage)},
+};
 
 GLUMITYV2_GAME_HOOK_TYPE(void *, il2cpp_object_new_t)(IL2CPP_Class *klass);
 il2cpp_object_new_t target_il2cpp_object_new = nullptr;
@@ -71,7 +81,7 @@ void *il2cpp_object_new_hook_v(IL2CPP_Class *klass)
 
 uint8_t prntCntr = 0; // for color alternating
 
-const char *bannedMethods[] = {
+const char *ignoredMethods[] = {
     "Update",
     "FixedUpdate",
     "GetRenderFrameInterval",
@@ -79,7 +89,7 @@ const char *bannedMethods[] = {
     "InvokeMoveNext",
     "get_Current",
     "DoRenderLoop_Internal"};
-const int totalBanned = sizeof(bannedMethods) / sizeof(bannedMethods[0]);
+const int totalIgnored = sizeof(ignoredMethods) / sizeof(ignoredMethods[0]);
 
 void *il2cpp_runtime_invoke_hook_v(IL2CPP_MethodInfo *method, void *obj, void **params, void **exc)
 {
@@ -87,9 +97,9 @@ void *il2cpp_runtime_invoke_hook_v(IL2CPP_MethodInfo *method, void *obj, void **
     {
         bool isBanned = false;
 
-        for (int i = 0; i < totalBanned; i++)
+        for (int i = 0; i < totalIgnored; i++)
         {
-            if (strcmp(method->name, bannedMethods[i]) == 0)
+            if (strcmp(method->name, ignoredMethods[i]) == 0)
             {
                 isBanned = true;
                 break;
@@ -171,16 +181,13 @@ void LoadAndRunSingleScript(const std::filesystem::path &scriptPath, const char 
         return;
     }
 
-    // Register engine logging functions
-    tcc_add_symbol(tccState, "GlumityPlugin_printf", (const void *)&GlumityPlugin_printf);
-
-    // Inject IL2CPP runtime API functions completely isolated into this script's scope
     for (auto &apiFunc : apiFuncs)
     {
         tcc_add_symbol(tccState, apiFunc.first.c_str(), (const void *)apiFunc.second);
+        if (gb_verboseBridge)
+            GLUMITY_PRINT_COLOR(CON_CYAN, "Added a library function: %s\n", TCC_HEADER, apiFunc.first.c_str());
     }
 
-    // Relocate machine code into executable memory space
     int size = tcc_relocate(tccState, NULL);
     if (size <= 0)
     {

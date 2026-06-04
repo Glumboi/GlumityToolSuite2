@@ -2,6 +2,7 @@
 #define GLUMITYLIB_H
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <assert.h>
 #include <stddef.h>
 #include <MinHook.h>
@@ -31,7 +32,7 @@ extern "C"
 #include "GlumityDumper.h"
 #include "GlumityHooking.h"
 
-BOOL Glumity_GetErrorMessage(DWORD dwErrorCode, LPTSTR pBuffer, DWORD cchBufferLength);
+    BOOL Glumity_GetErrorMessage(DWORD dwErrorCode, LPTSTR pBuffer, DWORD cchBufferLength);
 
 #define INIT_GLUMITYV2_EXPORT(mod, exportName, exportType) \
     (exportType) GetProcAddress(mod, exportName);
@@ -129,14 +130,10 @@ union IL2CPP_RGCTXData
     PAD_TO(0x00, 0x08); // stubbing this for now
 };
 
-static_assert(sizeof(union IL2CPP_RGCTXData) == 0x08, "Struct size mismatch!");
-
 struct IL2CPP_GenericMethod
 {
     PAD_TO(0x00, 0x18);
 };
-
-static_assert(sizeof(struct IL2CPP_GenericMethod) == 0x18, "Struct size mismatch!");
 
 struct IL2CPP_Type
 {
@@ -154,14 +151,12 @@ struct IL2CPP_Type
     union
     {
         uint32_t attrs;
-        enum Il2CppTypeEnum type;
+        int type; //enum Il2CppTypeEnum type;
         uint32_t num_mods;
         uint32_t byref;
         uint32_t pinned;
     } __bitfield8;
 };
-
-static_assert(sizeof(struct IL2CPP_Type) == 0x10, "Struct size mismatch!");
 
 struct IL2CPP_Class
 {
@@ -177,8 +172,6 @@ struct IL2CPP_Class
     struct IL2CPP_Class *parent;
     PAD_TO(0x60, 0x0338);
 };
-
-static_assert(sizeof(struct IL2CPP_Class) == 0x0338, "Struct size mismatch!");
 
 struct ParameterInfo
 {
@@ -211,15 +204,11 @@ struct IL2CPP_MethodInfo
     PAD_TO(0x50, 0x58);
 };
 
-static_assert(sizeof(struct IL2CPP_MethodInfo) == 0x58, "Struct size mismatch!");
-
 struct IL2CPP_VirtualInvokeData
 {
     IL2CPP_Method_Pointer methodPtr;
     struct IL2CPP_MethodInfo const *method;
 };
-
-static_assert(sizeof(struct IL2CPP_VirtualInvokeData) == 0x10, "Struct size mismatch!");
 
 struct GameObject__VTable
 {
@@ -267,8 +256,6 @@ struct GameObject__Class
     struct GameObject__VTable vtable;
 };
 
-static_assert(sizeof(struct GameObject__Class) == 0x0178, "Struct size mismatch!");
-
 struct Object_1__Fields
 {
     void *m_CachedPtr;
@@ -302,7 +289,24 @@ typedef struct IL2CPP_String
 /// @brief Allocates memory, caller has to manage returned pointer
 /// @param str a pointer to an initialized il2cpp string
 /// @return pointer to a newly allocated ascii, null terminated c string, il2cpp strings are normally utf encoded, so it could be lossy
-char *IL2CPP_String_ToCString(GlumityV2_il2cppStr *str);
+inline char *IL2CPP_String_ToCString(GlumityV2_il2cppStr *str)
+{
+    int len = str->fields.m_stringLength;
+    uint16_t *chars = &str->fields.m_firstChar;
+
+    // TODO: Check for memory leaks, I believe the game manages it automatically though
+    char *result = (char *)malloc(len + 1);
+    if (!result)
+        return NULL;
+
+    for (int i = 0; i < len; i++)
+    {
+        result[i] = (char)chars[i];
+    }
+
+    result[len] = '\0';
+    return result;
+}
 
 /// @brief Allocates memory, caller has to manage returned pointer, can be ignored as well and let the game "manage" it, might cause leaks eventually
 /// @param input Any null terminated c string
@@ -314,5 +318,15 @@ struct IL2CPP_Exception;
 
 struct IL2CPP_Object *IL2CPP_InvokeMethod(struct IL2CPP_Class *klass, const char *method_name, void *instance, void **params);
 void IL2CPP_ResolveFunctions();
+
+#ifdef ASSERT_IL2CPP_STRUCT_SZ
+static_assert(sizeof(struct GameObject__Class) == 0x0178, "Struct size mismatch!");
+static_assert(sizeof(struct IL2CPP_VirtualInvokeData) == 0x10, "Struct size mismatch!");
+static_assert(sizeof(struct IL2CPP_MethodInfo) == 0x58, "Struct size mismatch!");
+static_assert(sizeof(union IL2CPP_RGCTXData) == 0x08, "Struct size mismatch!");
+static_assert(sizeof(struct IL2CPP_GenericMethod) == 0x18, "Struct size mismatch!");
+static_assert(sizeof(struct IL2CPP_Type) == 0x10, "Struct size mismatch!");
+static_assert(sizeof(struct IL2CPP_Class) == 0x0338, "Struct size mismatch!");
+#endif
 
 #endif

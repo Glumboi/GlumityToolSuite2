@@ -1,5 +1,3 @@
-#define DEBUG
-
 #include <GlumityLib.h>
 #include <sstream>
 #include <windows.h>

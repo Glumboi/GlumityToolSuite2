@@ -23,23 +23,6 @@ BOOL Glumity_GetErrorMessage(DWORD dwErrorCode, LPTSTR pBuffer, DWORD cchBufferL
     return (cchMsg > 0);
 }
 
-char *IL2CPP_String_ToCString(GlumityV2_il2cppStr *str)
-{
-    int len = str->fields.m_stringLength;
-    uint16_t *chars = &str->fields.m_firstChar;
-
-    // TODO: Check for memory leaks, I believe the game manages it automatically though
-    char *result = (char *)malloc(len + 1);
-
-    for (int i = 0; i < len; i++)
-    {
-        result[i] = (char)chars[i];
-    }
-
-    result[len] = '\0';
-    return result;
-}
-
 GlumityV2_il2cppStr *IL2CPP_String_Create(const char *input)
 {
     if (!input)

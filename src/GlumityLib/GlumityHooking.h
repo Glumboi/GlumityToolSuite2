@@ -7,12 +7,13 @@
 
 void GlumityPlugin_printf(const char *fmt, const char *printHeaderInner, ...);
 
-#define GLUMITYV2_INIT_HOOKING(pluginName, onFail)                                   \
-    if (MH_Initialize() != MH_OK)                                                    \
-    {                                                                                \
-        GLUMITY_PRINT_COLOR(CON_RED, "Failed to initialize Minhook!\n", pluginName); \
-        onFail;                                                                      \
-    }                                                                                \
+#define GLUMITYV2_INIT_HOOKING(pluginName, onFail)                                                      \
+    MH_STATUS stat = MH_Initialize();                                                                   \
+    if (stat != MH_OK && stat != MH_ERROR_ALREADY_INITIALIZED)                                                                                  \
+    {                                                                                                   \
+        GLUMITY_PRINT_COLOR(CON_RED, "Failed to initialize Minhook! (Status: %d)\n", pluginName, stat); \
+        onFail;                                                                                         \
+    }                                                                                                   \
     else
 
 #define GLUMITYV2_GAME_HOOK_CREATE(name, original, hook)                                          \

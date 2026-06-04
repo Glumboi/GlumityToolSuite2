@@ -2,6 +2,7 @@
 #include "hooks.h"
 #include <string.h>
 #include "DinoScapeController.h"
+
 GlumityV2DumperExports dumperExports;
 
 HMODULE ForceGetHmodule(const char *moduleName, bool isInApplicationFolder)
@@ -71,8 +72,8 @@ void Setup()
     // Wait for dumper to finish initializing, crucial to avoid crashes
     GLUMITYV2_DUMPER_WAITFOR_INIT(dumperExports);
     const char *targetMod = "GameAssembly.dll";
-
     HANDLE hmod = ForceGetHmodule(targetMod, true);
+
     GlumityPlugin_printf("Force loaded module: %s at: %x\n", MY_PLUGIN, targetMod, hmod);
     void *GetFullUrlPtr =
         dumperExports.GlumityV2Dumper_GetFunctionPointerWithPattern(hmod, "48 89 5C 24 ? 48 89 74 24 ? 57 48 83 EC ? 80 3D 1D DF F0 00 00");

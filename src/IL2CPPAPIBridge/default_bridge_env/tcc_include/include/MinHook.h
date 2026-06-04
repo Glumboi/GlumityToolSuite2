@@ -34,6 +34,8 @@
 
 #include <windows.h>
 
+#ifndef MH_STAT_DEF
+#define MH_STAT_DEF
 // MinHook Error Codes.
 typedef enum MH_STATUS
 {
@@ -82,6 +84,8 @@ typedef enum MH_STATUS
     MH_ERROR_FUNCTION_NOT_FOUND
 }
 MH_STATUS;
+
+#endif
 
 // Can be passed as a parameter to MH_EnableHook, MH_DisableHook,
 // MH_QueueEnableHook or MH_QueueDisableHook.
