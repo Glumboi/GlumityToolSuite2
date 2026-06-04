@@ -1,0 +1,212 @@
+{
+  "repo_notes": [
+    {
+      "content": ""
+    }
+  ],
+  "pages": [
+    {
+      "title": "GlumityToolSuite2 Overview",
+      "purpose": "High-level introduction to the project: what it is, what it does, its target environment, and how the major components relate to each other. Links to all child sections for deeper dives.",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Architecture and Component Map",
+      "purpose": "Describes the multi-stage loading pipeline, the relationship between version.dll → GlumityToolSuite2.dll → Plugins, and the two plugin delivery mechanisms (compiled DLLs vs JIT scripts). Includes a component dependency diagram in prose.",
+      "parent": "GlumityToolSuite2 Overview",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Build System and Toolchain",
+      "purpose": "Covers the dual build system: xmake for C++20 plugins/bridge/dumper, and the Odin build.bat for the main loader DLL. Explains target directories, build modes (debug/release), and the MD/MDd runtime linkage.",
+      "parent": "GlumityToolSuite2 Overview",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Injection and Loading Pipeline",
+      "purpose": "Overview of how the suite gains execution inside a target Unity process, from the initial DLL hijack through plugin discovery and initialization. Links to child pages for each stage.",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "version.dll Proxy Injector",
+      "purpose": "Details the DLL-hijacking entrypoint: how Exports.h re-exports all legitimate version.dll functions, how DllMain spawns the loader thread, the mutex guard that prevents double-injection, and the 5-second startup delay.",
+      "parent": "Injection and Loading Pipeline",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "MainLoader-Odin: Plugin Orchestrator",
+      "purpose": "Deep dive into the Odin-language main loader DLL. Covers the setup() → cleanup() lifecycle, INI configuration parsing, plugin discovery via dllLoader, the ordered loading sequence (Dumper → APIBridge → general plugins), and the GLUMITY_ENTRY handover.",
+      "parent": "Injection and Loading Pipeline",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "MainLoader-Odin: Helper Utilities",
+      "purpose": "Documents the helpers package: file extension filtering (has_file_extension, remove_file_extension, get_file_name), array utilities (is_in_slice), string helpers, and console initialization. Explains how these support the loader's directory scanning logic.",
+      "parent": "Injection and Loading Pipeline",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "GlumityLib: Core C Library",
+      "purpose": "Overview of the shared static library that underpins every plugin and the loader. Summarizes the sub-headers and links to child pages for each major concern.",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "IL2CPP Runtime Interop (GlumityLib.h / GlumityLib.c)",
+      "purpose": "Covers the IL2CPP memory structures (IL2CPP_Class, IL2CPP_Image, IL2CPP_MethodInfo, VTable, GameObject hierarchy), the PAD/PAD_TO alignment macros, IL2CPP_ResolveFunctions runtime binding, IL2CPP_String_Create UTF-16 marshalling, and IL2CPP_InvokeMethod reflection pipeline.",
+      "parent": "GlumityLib: Core C Library",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Plugin Lifecycle and Hooking Macros",
+      "purpose": "Documents the plugin contract macros (GLUMITYV2_PLUGIN_ENTRY, GLUMITYV2_PLUGIN_EXIT, GLUMITYV2_PLUGIN_THREADRUN), the MinHook wrapper macros (GLUMITYV2_INIT_HOOKING, GLUMITYV2_GAME_HOOK_CREATE, GLUMITYV2_GAME_HOOK_ENABLE_ALL), dependency verification (GLUMITYV2_VERIFY_DEPENDENCY), and the GlumityPlugin struct.",
+      "parent": "GlumityLib: Core C Library",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Supporting Utilities: Filesystem, Dumper Interface, Console",
+      "purpose": "Covers GlumityFilesystem (directory scanning, extension filtering), GlumityDumper (GlumityV2DumperExports struct, GLUMITYV2_DUMPER_WAITFOR_INIT macro, function pointer typedefs), GlumityConsole (color constants, GLUMITY_PRINT_COLOR macro), and GlumityPluginLoader struct.",
+      "parent": "GlumityLib: Core C Library",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "IL2CPP Metadata Resolution",
+      "purpose": "Overview of the two-layer metadata resolution system: the IL2CPPResolver C++ library and the GlumityV2IL2CPPDumper plugin. Links to child pages for each layer.",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "GlumityV2IL2CPPDumper Plugin",
+      "purpose": "Details the Dumper class lifecycle (Init, InitIL2CPPResolver, GetInitState), the three function-pointer resolution strategies (direct class/method lookup, global iteration with strstr, pattern scanning via PE header traversal), the GlumityV2Dumper_WaitForDumper synchronization primitive, and the exported C API.",
+      "parent": "IL2CPP Metadata Resolution",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "IL2CPPResolver Library",
+      "purpose": "Documents the embedded IL2CPPResolver C++ header library: the IL2CPP_Resolver.hpp umbrella include, the IL2CPP namespace (Domain, Class, Thread, String, ResolveCall, Callback APIs), Unity wrapper classes (CGameObject, CTransform, CCamera, CComponent, CRigidbody, CLayerMask, CObject), data structures (il2cpp.hpp, il2cppArray, il2cppDictionary, Engine.hpp, System_String.hpp), and utilities (Hash, VTable, Helper). Also covers obfuscation support (ROT cipher) and the SystemTypeCache.",
+      "parent": "IL2CPP Metadata Resolution",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "IL2CPPAPIBridge: JIT Scripting Engine",
+      "purpose": "Overview of the TCC-based runtime scripting system. Explains the bridge concept and links to child pages for the host engine and the JIT script authoring model.",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Bridge Host Engine (main.cpp)",
+      "purpose": "Deep dive into IL2CPPAPIBridge/main.cpp: the hardApiFuncs symbol table, LoadIl2CPP_API PE export enumeration, LoadAndRunSingleScript TCC compilation pipeline (tcc_new → tcc_set_output_type → tcc_add_symbol → tcc_relocate → GlumityMain execution), ProcessJITScriptsFolder directory scanning, verbosity mode (VERBOSE_BRIDGE file toggle, il2cpp_object_new and il2cpp_runtime_invoke hooks), and the intentional memory-leak strategy for persistent hooks.",
+      "parent": "IL2CPPAPIBridge: JIT Scripting Engine",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Writing JIT Scripts",
+      "purpose": "Practical guide to authoring .c scripts for the jit_scripts folder. Covers the required GlumityMain entry point, available API symbols (GlumityPlugin_printf, MH_* hooks, IL2CPP_ResolveFunctions, GlumityV2DumperExports_Init), the PAD_TO struct alignment pattern for shadow types, the GLUMITYV2_DUMPER_WAITFOR_INIT initialization sequence, and the tcc_include/tcc_libs directory layout. Uses the DinoScapeOffline scripts as worked examples. (JIT scripts are only compiled once per game start, a restart after changing any is required!)",
+      "parent": "IL2CPPAPIBridge: JIT Scripting Engine",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Demo Plugins",
+      "purpose": "Overview of the bundled example plugins that demonstrate the framework's capabilities. Links to child pages for each plugin family.",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "DinoScapeOffline Plugin",
+      "purpose": "Full walkthrough of the DinoScapeOffline compiled DLL plugin: customTypes.h shadow structs (DinoInfo, PlayFabApiSettings, MainReferences, ZoneMove), hooks.h/hooks.c implementation (PlayFabApiSettings_GetFullUrl URL rerouting, DinoInfo_CheckIfOwned forced-true override, MainReferences_Update per-frame VK_F2 toggle), newUrl.txt filesystem configuration, and the LaunchCustomServer CreateProcess sidecar pattern. Also covers the equivalent TCC JIT script versions in default_bridge_env/jit_scripts.",
+      "parent": "Demo Plugins",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "PCBS2 and HFL-InfiniteMoney Plugins",
+      "purpose": "Documents the PC Building Simulator 2 plugins (PCBS2CheatsV2 hooking CareerStatus_State_OnDeserialization, PCBS2OverclockAnyCPUV2) and the House Flipper 2 infinite-money plugin (hooking Budget.SetBudget, MoneyBalance.SetPlayerBudget, MoneyBalance.DecreaseBudget). Illustrates the standard plugin pattern using IL2CPP_Resolver.hpp alongside GlumityLib.",
+      "parent": "Demo Plugins",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    },
+    {
+      "title": "Glossary",
+      "purpose": "Definitions of all codebase-specific terms, abbreviations, macro names, and domain concepts that an onboarding engineer needs to understand. Each entry includes file/function pointers.",
+      "page_notes": [
+        {
+          "content": ""
+        }
+      ]
+    }
+  ]
+}
