@@ -29,6 +29,7 @@ setup :: proc() {
 		dllLoader.dllLoader_LoadIL2CPPDumper(&g_pluginLoader)
 	}
 
+	dllLoader.dllLoader_LoadIL2CPPAPIBridge_TCC(&g_pluginLoader);
 	dllLoader.dllLoader_loadDlls(&g_pluginLoader)
 
 	if len(g_pluginLoader.loadedDlls) <= 0 {
