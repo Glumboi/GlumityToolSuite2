@@ -8,9 +8,17 @@ A work in progress, lightweight-ish suite for modifying il2cpp unity games
 - An IL2CPPAPIBridge as "IL2CPPAPIBridge.dll", this is essentially our runtime compiler, embeds a tcc enviornment tailored to work with GlumityV2
 
 ## Requirements
-- Target Unity Game compiled with IL2CPP (x64 recommended).
+- Target Unity Game compiled with IL2CPP (x64 only atm).
 - Windows 7 SP1 or higher (x64).
-- C/C++ Runtime libraries compatible with the Tiny C Compiler (TCC) for JIT scripting.
+
+## Build-Requirements
+- Odin programming language
+- Xmake
+- Microsoft Visual C++ 20 (c++20 was specified in xmake, older versions may be needed too though, just try what sticks)
+
+## Build-Instructions - May become outdated soon-ish
+- To build the MainLoader-Odin (GlumityToolSuite2.dll) go to "src/MainLoader-Odin/" and run the build.bat (output is within "src/MainLoader-Odin/build)"
+- Everything else is built with a single "xmake" command inside the root folder, output is the "build" folder within the root folder, IMPORTANT: the IL2CPPDumper and IL2CPPAPIBridge will be inside "build/Plugins/"
 
 # GlumityToolSuite2.dll
  - Works on its own already, heavily restricted and basically just a .dll loader - can be injected via the "version.dll" proxy or external tools, personal preference.
