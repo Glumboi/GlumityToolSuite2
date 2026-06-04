@@ -62,6 +62,6 @@ Due to it's nature though, it'll probably stay in this bad of a shape, the core 
 
 ## Showcase
 
-# [DinoScapeOffline](https://github.com/Glumboi/GlumityToolSuite) - adapted to the new TCC way of making mods!
+# [DinoScapeOffline](https://www.nexusmods.com/dinoscape/mods/1?tab=description) - adapted to the new TCC way of making mods!
 ![alt text](screenshots/DinoScapeOffline-TCC.png)
 
