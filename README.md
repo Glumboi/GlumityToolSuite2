@@ -21,18 +21,21 @@ A work in progress, lightweight-ish suite for modifying il2cpp unity games
 ```
 
 ## Build-Instructions - May become outdated soon-ish
+``` text
 - To build the MainLoader-Odin (GlumityToolSuite2.dll) go to "src/MainLoader-Odin/" and run the build.bat (output is within "src/MainLoader-Odin/build)"
 - Everything else is built with a single "xmake" command inside the root folder, output is the "build" folder within the root folder, IMPORTANT: the IL2CPPDumper and IL2CPPAPIBridge will be inside "build/Plugins/"
+```
 
 # GlumityToolSuite2.dll
  - Works on its own already, heavily restricted and basically just a .dll loader - can be injected via the "version.dll" proxy or external tools, personal preference.
  
 # Hooking IL2CPP code (using IL2CPPDumper and GlumityLib)
-- "GlumityV2IL2CPPDumper.dll" to be present within the "Plugins" folder, for examples of utilizing it, refer to DemoPlugins or to the example [JIT scripts].(src\IL2CPPAPIBridge\default_bridge_env\jit_scripts)
+- Requires "GlumityV2IL2CPPDumper.dll" to be present within the "Plugins" folder, for examples of utilizing it, refer to [DemoPlugins](src\DemoPlugins) or to the example [JIT scripts](src\IL2CPPAPIBridge\default_bridge_env\jit_scripts)
 
 # Hooking IL2CPP code (using IL2CPPAPIBridge and GlumityLib)
 - "IL2CPPDumper.dll" in the "Plugins" folder and its requirements.
 - A valid TCC enviornment, for structure, view "Directory Structure" 
+(example [JIT scripts](src\IL2CPPAPIBridge\default_bridge_env\jit_scripts))
 
 ## Directory Structure
 Upon first initialization, the suite creates or expects the following structural hierarchy inside the game directory:
