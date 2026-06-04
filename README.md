@@ -56,6 +56,6 @@ TargetGame/
 
 # Important!
 
-There might be some undocumented shenanigangs going on, this project is pretty all over the place, I am aware of that and somewhat trying to mitigate it.
-Due to it's nature though, it'll probably stay in this bad of a shape, the core project (Glumity "V1") has started a couple years ago and did already suffer from similar things, this started out as Glumity V1 with a better dumper and has expanded quite since.
+There might be some undocumented shenanigans going on, this project is pretty all over the place, I am aware of that and somewhat trying to mitigate it.
+Due to it's nature though, it'll probably stay in this bad of a shape, the core project ([Glumity "V1"](https://github.com/Glumboi/GlumityToolSuite)) has started a couple years ago and did already suffer from similar things, this started out as Glumity V1 with a better dumper and has expanded quite since.
 
