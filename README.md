@@ -60,8 +60,9 @@ There might be some undocumented shenanigans going on, this project is pretty al
 Due to it's nature though, it'll probably stay in this bad of a shape, the core project ([Glumity "V1"](https://github.com/Glumboi/GlumityToolSuite)) has started a couple years ago and did already suffer from similar things, this started out as Glumity V1 with a better dumper and has expanded quite since.
 
 
-## Showcase
+# Showcase
 
-# [DinoScapeOffline](https://www.nexusmods.com/dinoscape/mods/1?tab=description) - adapted to the new TCC way of making mods!
+## [DinoScapeOffline](https://www.nexusmods.com/dinoscape/mods/1?tab=description) - adapted to the new TCC way of making mods!
+
 ![alt text](screenshots/DinoScapeOffline-TCC.png)
 
