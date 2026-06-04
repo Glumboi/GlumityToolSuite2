@@ -2,6 +2,7 @@
 #include <string.h>
 #include <map>
 #include <string>
+#include <vector>
 #include <filesystem>
 #include <memoryapi.h>
 
@@ -14,7 +15,8 @@ GlumityV2DumperExports dumperExports;
 #define TCC_HEADER "TCC"
 bool gb_verboseBridge = false;
 
-std::map<std::string, GlumityGeneric_Func> apiFuncs = {
+// hard coded api functions exposed by various modules of the glumityv2 suite
+std::map<std::string, GlumityGeneric_Func> hardApiFuncs = {
     {"GlumityPlugin_printf", reinterpret_cast<GlumityGeneric_Func>(&GlumityPlugin_printf)},
     {"MH_DisableHook", reinterpret_cast<GlumityGeneric_Func>(&MH_DisableHook)},
     {"GlumityV2DumperExports_Init", reinterpret_cast<GlumityGeneric_Func>(&GlumityV2DumperExports_Init)},
@@ -25,6 +27,12 @@ std::map<std::string, GlumityGeneric_Func> apiFuncs = {
     {"MH_EnableHook", reinterpret_cast<GlumityGeneric_Func>(&MH_EnableHook)},
     {"Glumity_GetErrorMessage", reinterpret_cast<GlumityGeneric_Func>(&Glumity_GetErrorMessage)},
 };
+
+// hard coded libraries to link to tcc
+const std::vector<std::string> hardLibs = {"msvcrt", "kernel32", "user32"};
+// ^
+// |
+// TODO: make both not hard coded and provide some sort of config
 
 GLUMITYV2_GAME_HOOK_TYPE(void *, il2cpp_object_new_t)(IL2CPP_Class *klass);
 il2cpp_object_new_t target_il2cpp_object_new = nullptr;
@@ -61,7 +69,7 @@ void LoadIl2CPP_API(HMODULE hModule)
         char *functionName = (char *)((BYTE *)hModule + nameRvas[i]);
         WORD ordinal = nameOrdinals[i];
         void *functionAddress = (BYTE *)hModule + functionAddresses[ordinal];
-        apiFuncs[functionName] = (GlumityGeneric_Func)functionAddress;
+        hardApiFuncs[functionName] = (GlumityGeneric_Func)functionAddress;
         if (i % 2 == 0)
         {
             GlumityPlugin_printf(" - %s [At: %p]\n", MY_PLUGIN, functionName, functionAddress);
@@ -167,10 +175,6 @@ void LoadAndRunSingleScript(const std::filesystem::path &scriptPath, const char 
     tcc_set_output_type(tccState, TCC_OUTPUT_MEMORY);
     tcc_set_error_func(tccState, 0x0, TCC_Error_Handler);
 
-    tcc_add_library(tccState, "msvcrt");
-    tcc_add_library(tccState, "kernel32");
-    tcc_add_library(tccState, "user32");
-
     // Load only this specific self-contained .c file
     std::string filePathStr = scriptPath.string();
     int stat = tcc_add_file(tccState, filePathStr.c_str());
@@ -181,11 +185,18 @@ void LoadAndRunSingleScript(const std::filesystem::path &scriptPath, const char 
         return;
     }
 
-    for (auto &apiFunc : apiFuncs)
+    for (auto &apiFunc : hardApiFuncs)
     {
         tcc_add_symbol(tccState, apiFunc.first.c_str(), (const void *)apiFunc.second);
         if (gb_verboseBridge)
             GLUMITY_PRINT_COLOR(CON_CYAN, "Added a library function: %s\n", TCC_HEADER, apiFunc.first.c_str());
+    }
+
+    for (auto &lib : hardLibs)
+    {
+        tcc_add_library(tccState, lib.c_str());
+        if (gb_verboseBridge)
+            GLUMITY_PRINT_COLOR(CON_CYAN, "Added a lib: %s\n", TCC_HEADER, lib.c_str());
     }
 
     int size = tcc_relocate(tccState, NULL);
@@ -267,15 +278,15 @@ VOID Setup()
     GLUMITY_PRINT_COLOR(CON_BLUE, "Found unity IL2CPP GameAssembly.dll (starting export parsing...)\n", MY_PLUGIN);
     LoadIl2CPP_API(hMod);
 
-    if (apiFuncs.find("il2cpp_object_new") == apiFuncs.end() ||
-        apiFuncs.find("il2cpp_runtime_invoke") == apiFuncs.end())
+    if (hardApiFuncs.find("il2cpp_object_new") == hardApiFuncs.end() ||
+        hardApiFuncs.find("il2cpp_runtime_invoke") == hardApiFuncs.end())
     {
         GLUMITY_PRINT_COLOR(CON_YELLOW, "Could not locate required internal API endpoints inside map!\n", MY_PLUGIN);
         return;
     }
 
-    target_il2cpp_object_new = (il2cpp_object_new_t)apiFuncs["il2cpp_object_new"];
-    target_il2cpp_runtime_invoke = (il2cpp_runtime_invoke_t2)apiFuncs["il2cpp_runtime_invoke"];
+    target_il2cpp_object_new = (il2cpp_object_new_t)hardApiFuncs["il2cpp_object_new"];
+    target_il2cpp_runtime_invoke = (il2cpp_runtime_invoke_t2)hardApiFuncs["il2cpp_runtime_invoke"];
 
     InitVerbosity();
 
