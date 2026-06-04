@@ -227,8 +227,7 @@ void LoadAndRunSingleScript(const std::filesystem::path &scriptPath, const char 
     if (entryPoint != nullptr)
     {
         GLUMITY_PRINT_COLOR(CON_GREEN, "Executing Script Instance -> %s [%p]\n", TCC_HEADER, scriptPath.filename().string().c_str(), entryPoint);
-        // Create a new Thread
-        GLUMITYV2_PLUGIN_THREADRUN(entryPoint, NULL);
+        entryPoint();
     }
     else
     {
