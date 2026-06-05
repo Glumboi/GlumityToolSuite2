@@ -6,7 +6,6 @@
 
 #define MY_PLUGIN "IL2CPPGUILookup"
 
-void GlumityPlugin_printf(const char *fmt, const char *head, ...);
 GlumityV2DumperExports dumperExports;
 
 const char g_szClassName[] = "GlumityGuiClass";
@@ -32,8 +31,6 @@ DWORD g_toggleKey = VK_INSERT;
 
 char **g_CachedFunctionList = NULL;
 int g_CachedFunctionCount = 0;
-
-extern char **GlumityV2Dumper_GetEverything();
 
 void CacheAllFunctions()
 {
@@ -133,7 +130,6 @@ void PerformAddressLookup(const char *query)
 {
     char className[64] = {0};
     char methodName[64] = {0};
-    char bytesRes[256] = {0};
     size_t start = 0;
     size_t classLen = 0;
     size_t methodLen = 0;
@@ -198,7 +194,31 @@ void PerformAddressLookup(const char *query)
 
     funcPtr = dumperExports.GlumityV2Dumper_GetFunctionPointer(className, methodName);
 
-    size_t resBufferSize = 4096;
+    char bytesRes[512] = {0};
+    if (funcPtr != NULL)
+    {
+        unsigned char *codeBytes = (unsigned char *)funcPtr;
+        if (!IsBadReadPtr(funcPtr, 16))
+        {
+            sprintf_s(bytesRes, sizeof(bytesRes),
+                      "Raw Bytes: %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X",
+                      codeBytes[0], codeBytes[1], codeBytes[2], codeBytes[3],
+                      codeBytes[4], codeBytes[5], codeBytes[6], codeBytes[7],
+                      codeBytes[8], codeBytes[9], codeBytes[10], codeBytes[11],
+                      codeBytes[12], codeBytes[13], codeBytes[14], codeBytes[15]);
+        }
+        else
+        {
+            sprintf_s(bytesRes, sizeof(bytesRes), "Raw Bytes: [Memory Unreadable]");
+        }
+    }
+    else
+    {
+        sprintf_s(bytesRes, sizeof(bytesRes), "Raw Bytes: [Function Not Found]");
+    }
+    SetWindowTextA(g_hBytesEdit, bytesRes);
+
+    size_t resBufferSize = 8192;
     char *res = (char *)malloc(resBufferSize);
     if (res != NULL)
     {
@@ -250,40 +270,20 @@ void PerformAddressLookup(const char *query)
                   "{\r\n"
                   "    MH_DisableHook(MH_ALL_HOOKS);\r\n"
                   "}",
-                  className, methodName, funcPtr,
-                  className,
-                  className, methodName, className,
-                  className, methodName, className, methodName,
-                  className, methodName, className,
-                  className, methodName,
-                  funcPtr,
-                  className, methodName, className, methodName, className, methodName,
-                  className, methodName,
-                  className, methodName,
-                  className, methodName);
+                  className, methodName, funcPtr,                                      // Header outputs
+                  className,                                                           // struct %s;
+                  className, methodName, className,                                    // GLUMITYV2_GAME_HOOK_TYPE
+                  className, methodName, className, methodName,                        // %s_%s_t %s_%s_o;
+                  className, methodName, className,                                    // void* %s_%s_hook(struct %s* _this)
+                  className, methodName,                                               // return %s_%s_o(_this);
+                  funcPtr,                                                             // Current pointer address found: 0x%p
+                  className, methodName, className, methodName, className, methodName, // Setup pointer assignment lines
+                  className, methodName,                                               // GLUMITYV2_GAME_HOOK_CREATE label
+                  className, methodName,                                               // original pointer target
+                  className, methodName);                                              // hook pointer target
 
         SetWindowTextA(g_hOutputEdit, res);
         free(res);
-    }
-
-    if (funcPtr == NULL)
-    {
-        SetWindowTextA(g_hBytesEdit, "Hex Bytes:\r\n[Null pointer returned]");
-    }
-    else if (IsBadReadPtr(funcPtr, 8))
-    {
-        SetWindowTextA(g_hBytesEdit, "Hex Bytes:\r\n[Memory unreadable / Protect Error]");
-    }
-    else
-    {
-        unsigned char *pBytes = (unsigned char *)funcPtr;
-        sprintf_s(bytesRes, sizeof(bytesRes),
-                  "Hex Bytes near pointer location (First 8):\r\n"
-                  "%02X %02X %02X %02X %02X %02X %02X %02X",
-                  pBytes[0], pBytes[1], pBytes[2], pBytes[3],
-                  pBytes[4], pBytes[5], pBytes[6], pBytes[7]);
-
-        SetWindowTextA(g_hBytesEdit, bytesRes);
     }
 }
 
@@ -446,7 +446,7 @@ DWORD WINAPI WindowThread(LPVOID lpParam)
     g_showWindow = 1;
     ShowWindow(hwnd, SW_HIDE);
     UpdateWindow(hwnd);
-    GlumityPlugin_printf("Initialized the window (press insert to show)!", MY_PLUGIN);
+    GlumityPlugin_printf("Initialized the window (press insert to show)!\n", MY_PLUGIN);
 
     BOOL wasKeyPressed = FALSE; // Asynchronous loop checking state updates safely alongside standard window scheduling messages
     while (TRUE)
@@ -464,7 +464,7 @@ DWORD WINAPI WindowThread(LPVOID lpParam)
             // Thread yield interval to keep CPU cycles low when idling
             Sleep(10);
         }
-        // Safe Asynchronous key detection out-of-band from the game focus locks
+        //  key detection out of the game focus locks
         BOOL isKeyDown = (GetAsyncKeyState(g_toggleKey) & 0x8000) != 0;
         if (isKeyDown && !wasKeyPressed)
         {
