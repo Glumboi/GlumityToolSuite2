@@ -62,6 +62,10 @@ Due to it's nature though, it'll probably stay in this bad of a shape, the core 
 
 # Showcase
 
+## IL2CPPGUILookup tutorial
+
+<iframe width="1302" height="703" src="https://www.youtube.com/embed/7h7-UZlRth0" title="IL2CPPGUILookup - GlumityToolSuiteV2 (Tutorial)" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+
 ## [DinoScapeOffline](https://www.nexusmods.com/dinoscape/mods/1?tab=description) - adapted to the new TCC way of making mods!
 
 ![alt text](screenshots/DinoScapeOffline-TCC.png)
