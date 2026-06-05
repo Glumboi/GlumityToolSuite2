@@ -201,6 +201,7 @@ void LaunchCustomServer()
 
 void Setup()
 {
+    GLUMITYV2_VERIFY_DEPENDENCY("GlumityV2IL2CPPDumper");
     GLUMITYV2_DUMPER_WAITFOR_INIT(dumperExports);
     const char *targetMod = "GameAssembly.dll";
     HANDLE hmod = ForceGetHmodule(targetMod, true);
