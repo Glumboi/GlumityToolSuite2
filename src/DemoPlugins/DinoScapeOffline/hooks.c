@@ -2,6 +2,7 @@
 
 BOOL DinoInfo_CheckIfOwned_hook(struct DinoInfo *_this, struct IL2CPP_MethodInfo *mi)
 {
+    _this->fields.owned = true;
     return true; // Force unlock all dinos!
 }
 
