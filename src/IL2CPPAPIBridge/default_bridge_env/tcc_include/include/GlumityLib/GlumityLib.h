@@ -151,7 +151,7 @@ struct IL2CPP_Type
     union
     {
         uint32_t attrs;
-        int type; // enum Il2CppTypeEnum type;
+        int type; //enum Il2CppTypeEnum type;
         uint32_t num_mods;
         uint32_t byref;
         uint32_t pinned;
