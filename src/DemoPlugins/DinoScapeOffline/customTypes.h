@@ -258,7 +258,7 @@ struct DinoInfo
 {
     void *vtable;
     void *monitor;
-    struct DinoInfo__Fields fields; // starts at 0x10 usually, but dump says the class is 0x70
+    struct DinoInfo__Fields fields; // starts at 0x10 
 };
 
 struct ZoneMove__VTable
