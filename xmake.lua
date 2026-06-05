@@ -6,14 +6,19 @@ add_requires("minhook")
 add_requires("lua")
 
 target("GlumityLib")
---  after_build(function (target)
---         -- copy .lib file to another directory (e.g., "output_libs")
---         os.cp(target:targetfile(), "src/ExamplePlugin-Odin")
---     end)
-    add_packages("minhook")
     set_kind("static")
     add_files("src/GlumityLib/*.c")
     add_links("user32")
+    add_packages("minhook")
+
+    -- Copy the source header and C files to the TCC include folder after building
+    after_build(function (target)
+        local dest_dir = "src/IL2CPPAPIBridge/default_bridge_env/tcc_include/include/GlumityLib"
+        os.mkdir(dest_dir)
+        os.cp("src/GlumityLib/*.h", dest_dir)
+        os.cp("src/GlumityLib/*.c", dest_dir)
+        print("-> GlumityLib source files successfully backed up to TCC environment.")
+    end)
 
 
 target("PCBS2OverclockAnyCPUV2")
