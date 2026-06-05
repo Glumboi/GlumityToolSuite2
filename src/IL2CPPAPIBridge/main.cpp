@@ -263,9 +263,9 @@ VOID ProcessJITScriptsFolder(const char *targetProgramFolder, const char *libDir
 
 VOID Setup()
 {
-    GLUMITYV2_DUMPER_WAITFOR_INIT(dumperExports);
     GLUMITYV2_VERIFY_DEPENDENCY("GlumityV2IL2CPPDumper");
     GLUMITYV2_VERIFY_DEPENDENCY("libtcc");
+    GLUMITYV2_DUMPER_WAITFOR_INIT(dumperExports);
 
     HMODULE hMod = GetModuleHandleA(GAME_ASSEMBLY);
     if (!hMod)
