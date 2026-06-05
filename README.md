@@ -64,7 +64,10 @@ Due to it's nature though, it'll probably stay in this bad of a shape, the core 
 
 ## IL2CPPGUILookup tutorial
 
-<iframe width="560" height="315" src="https://www.youtube.com/embed/7h7-UZlRth0" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+[![Watch the video](https://img.youtube.com/vi/7h7-UZlRth0/hqdefault.jpg)](https://www.youtube.com/embed/7h7-UZlRth0)
+
+[<img src="https://img.youtube.com/vi/7h7-UZlRth0/hqdefault.jpg" width="600" height="300"
+/>](https://www.youtube.com/embed/7h7-UZlRth0)
 
 ## [DinoScapeOffline](https://www.nexusmods.com/dinoscape/mods/1?tab=description) - adapted to the new TCC way of making mods!
 
