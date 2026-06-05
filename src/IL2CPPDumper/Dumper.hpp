@@ -21,8 +21,7 @@ namespace GlumityV2Dumper
         bool InitIL2CPPResolver()
         {
             // init IL2CPP
-            m_initState = (IL2CPP::Initialize(true) && IL2CPP::Thread::Attach(IL2CPP::Domain::Get()));
-            return m_initState;
+            return (IL2CPP::Initialize(true) && IL2CPP::Thread::Attach(IL2CPP::Domain::Get()));
         }
 
     public:
@@ -31,6 +30,11 @@ namespace GlumityV2Dumper
         bool GetInitState() const
         {
             return m_initState;
+        }
+
+        const std::vector<Unity::il2cppClass *> &GetClasses() const
+        {
+            return m_gameClasses;
         }
 
         void Init()
@@ -61,6 +65,7 @@ namespace GlumityV2Dumper
                 GlumityPlugin_printf("Found Class: %s | Parent Class: %s\n", PRINT_HEAD, c->m_pName, c->m_pParentClass->m_pName);
             }
 #endif
+            m_initState = true;
         }
 
         ~Dumper()

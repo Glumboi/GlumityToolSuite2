@@ -78,6 +78,47 @@ EXPORT void GlumityV2Dumper_WaitForDumper()
     }
 }
 
+// returns an array of strings containing info about all found game functions
+EXPORT char** GlumityV2Dumper_GetEverything()
+{
+    if (!dumper.GetInitState())
+        return nullptr;
+
+    const auto& classes = dumper.GetClasses();
+    std::vector<std::string> tempStrings;
+
+    for (auto* klass : classes)
+    {
+        if (!klass || !klass->m_pName)
+            continue;
+
+        void* iter = nullptr;
+        while (auto* method = IL2CPP::Class::GetMethods(klass, &iter))
+        {
+            if (!method || !method->m_pName)
+                continue;
+
+            std::string entry = std::string(klass->m_pName) + " " + std::string(method->m_pName);
+            tempStrings.push_back(entry);
+        }
+    }
+
+    if (tempStrings.empty())
+        return nullptr;
+
+    char** resultList = (char**)malloc((tempStrings.size() + 1) * sizeof(char*));
+    if (!resultList)
+        return nullptr;
+
+    for (size_t i = 0; i < tempStrings.size(); ++i)
+    {
+        resultList[i] = _strdup(tempStrings[i].c_str());
+    }
+    resultList[tempStrings.size()] = nullptr;
+
+    return resultList;
+}
+
 EXPORT void *GlumityV2Dumper_GetFunctionPointer(const char *className, const char *functionName)
 {
     GlumityPlugin_printf("Looking for function [%s] in class [%s]\n", PRINT_HEAD, functionName, className);
