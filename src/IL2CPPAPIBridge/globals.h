@@ -7,7 +7,8 @@
 #include <string>
 
 inline GlumityV2DumperExports g_dumperExports;
-inline bool gb_verboseBridge = false;
+inline bool g_verboseBridge = false;
+inline bool g_isReloading = false;
 
 // hard coded api functions exposed by various modules of the glumityv2 suite
 inline std::map<std::string, GlumityGeneric_Func> hardApiFuncs = {

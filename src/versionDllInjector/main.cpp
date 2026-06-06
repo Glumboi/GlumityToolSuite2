@@ -4,6 +4,13 @@
 
 #define DELAY_TIME 5000
 
+DWORD g_MainThreadId = 0;
+
+EXPORT DWORD GetApplicationMainThreadID()
+{
+    return g_MainThreadId;
+}
+
 void Main()
 {
     // Check if we are already running
@@ -27,7 +34,7 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserv
     switch (ul_reason_for_call)
     {
     case DLL_PROCESS_ATTACH:
-
+        g_MainThreadId = GetCurrentThreadId();
         hThread = CreateThread(0, 0, (LPTHREAD_START_ROUTINE)Main, 0, 0, 0);
         if (hThread)
             CloseHandle(hThread);
