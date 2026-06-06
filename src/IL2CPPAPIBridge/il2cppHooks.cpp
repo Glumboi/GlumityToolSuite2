@@ -48,6 +48,7 @@ void *il2cpp_object_new_hook(IL2CPP_Class *klass)
     return target_il2cpp_object_new(klass);
 }
 
+bool lastBlocked = true;
 void *il2cpp_runtime_invoke_hook(IL2CPP_MethodInfo *method, void *obj, void **params, void **exc)
 {
     return target_il2cpp_runtime_invoke(method, obj, params, exc);

@@ -60,7 +60,7 @@ void GetPluginDirectory(HMODULE hModule, char *outBuffer, DWORD bufferSize);
  * @param fmt Format string (just like printf)
  * @param ... Variable arguments for formatting
  */
-#define GLUMITY_PRINT_COLOR(color, fmt, ...)                   \
+#define GLUMITY_PRINT_COLOR(color, fmt, header, ...)           \
     do                                                         \
     {                                                          \
         HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);     \
@@ -71,7 +71,7 @@ void GetPluginDirectory(HMODULE hModule, char *outBuffer, DWORD bufferSize);
             originalAttributes = csbi.wAttributes;             \
         }                                                      \
         SetConsoleTextAttribute(hConsole, color);              \
-        GlumityPlugin_printf(fmt, ##__VA_ARGS__);              \
+        GlumityPlugin_printf(fmt, header, ##__VA_ARGS__);      \
         SetConsoleTextAttribute(hConsole, originalAttributes); \
     } while (0)
 
@@ -86,6 +86,7 @@ typedef struct
 
     // For the bridge only
     void *tccState;
+    size_t compiledSz;
 } GlumityPlugin;
 
 #endif

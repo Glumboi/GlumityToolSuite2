@@ -19,6 +19,10 @@ inline const char *ignoredMethods[] = {
     "DoRenderLoop_Internal"};
 const inline int totalIgnored = sizeof(ignoredMethods) / sizeof(ignoredMethods[0]);
 
+inline void *Global_PreHook()
+{
+}
+
 GLUMITYV2_GAME_HOOK_TYPE(void *, il2cpp_object_new_t)(IL2CPP_Class *klass);
 inline il2cpp_object_new_t target_il2cpp_object_new = nullptr;
 

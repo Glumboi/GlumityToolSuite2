@@ -12,6 +12,14 @@
 #include "defines.h"
 #include "il2cppHooks.h"
 
+struct DeadMemoryBlock
+{
+    void *address;
+    void *tccState;
+    char *name;
+};
+std::vector<DeadMemoryBlock> g_zombieBlocks;
+
 VOID TCC_Error_Handler(void *opaque, const char *msg)
 {
     GLUMITY_PRINT_COLOR(CON_RED, "%s\n", TCC_HEADER, msg);
@@ -23,8 +31,8 @@ void LoadAndRunSingleScript(const std::filesystem::path &scriptPath, const char 
     if (!tccState)
         return;
 
-    std::string atomicAsm = "\\GlumityLib\\atomicHook.asm";
-    std::string fullOptions = "-g -L" + std::string(libDir) + "\\lib -I" + std::string(includeDir) + "\\include " + std::string(includeDir) + atomicAsm;
+    std::string scriptPathString = scriptPath.string();
+    std::string fullOptions = "-g -L" + std::string(libDir) + "\\lib -I" + std::string(includeDir) + "\\include ";
     tcc_set_options(tccState, fullOptions.c_str());
 
     tcc_set_output_type(tccState, TCC_OUTPUT_MEMORY);
@@ -66,9 +74,19 @@ void LoadAndRunSingleScript(const std::filesystem::path &scriptPath, const char 
     GlumityPlugin plugin = {};
     plugin.entryPoint = (GlumityPlugin_EntryPoint)tcc_get_symbol(tccState, "GlumityMain");
     plugin.exitPoint = (GlumityPlugin_ExitPoint)tcc_get_symbol(tccState, "GlumityExit");
+
+    if (scriptPathString.length() >= sizeof(plugin.dllPath))
+    {
+        VirtualFree(program, 0, MEM_RELEASE);
+        tcc_delete(tccState);
+        return;
+    }
+
+    strcpy_s(plugin.dllPath, sizeof(plugin.dllPath), scriptPathString.c_str());
     plugin.tccState = tccState;
     plugin.hDll = NULL;
     plugin.name = _strdup(scriptPath.filename().string().c_str());
+    plugin.compiledSz = size;
 
     if (plugin.entryPoint)
     {
@@ -98,35 +116,14 @@ VOID ProcessJITScriptsFolder(const char *targetProgramFolder, const char *libDir
     }
 }
 
+// Global safe exit point wrapper for running active threads
+VOID *HookStub()
+{
+    return nullptr;
+}
+
 VOID HotReloadJITScripts()
 {
-    g_isReloading = true;
-    Sleep(50);
-
-    for (auto &[program, plugin] : g_compiledScripts)
-    {
-        if (plugin.exitPoint)
-        {
-            plugin.exitPoint();
-        }
-    }
-
-    Sleep(20);
-
-    for (auto &[program, plugin] : g_compiledScripts)
-    {
-        if (plugin.tccState)
-            tcc_delete((TCCState *)plugin.tccState);
-
-        if (program)
-            VirtualFree(program, 0, MEM_RELEASE); 
-
-        if (plugin.name)
-            free(plugin.name);
-    }
-
-    g_compiledScripts.clear();
-
     HMODULE hCurrentDll = GetModuleHandleA("IL2CPPAPIBridge.dll");
 
     char pathBuffer[MAX_PATH] = {0};
@@ -136,7 +133,59 @@ VOID HotReloadJITScripts()
     std::string libs = (baseDir / "tcc_libs").string();
     std::string incs = (baseDir / "tcc_include").string();
 
-    ProcessJITScriptsFolder(pathBuffer, libs.c_str(), incs.c_str());
+    g_isReloading = true;
+
+    for (auto &[program, plugin] : g_compiledScripts)
+    {
+        if (plugin.exitPoint)
+        {
+            plugin.exitPoint();
+        }
+    }
+
+    std::vector<std::string> pathsToReload;
+
+    for (auto &[program, plugin] : g_compiledScripts)
+    {
+        if (plugin.dllPath != NULL)
+        {
+            pathsToReload.push_back(std::string(plugin.dllPath));
+        }
+
+        if (plugin.entryPoint)
+        {
+            DWORD oldProtect;
+            VirtualProtect((LPVOID)plugin.entryPoint, 12, PAGE_EXECUTE_READWRITE, &oldProtect);
+
+            unsigned char *byte_ptr = (unsigned char *)plugin.entryPoint;
+
+            // mov rax, [address]
+            byte_ptr[0] = 0x48;
+            byte_ptr[1] = 0xB8;
+
+            void *targetAddress = (void *)&HookStub;
+            memcpy_s(&byte_ptr[2], 8, &targetAddress, sizeof(void *));
+
+            // jmp rax
+            byte_ptr[10] = 0xFF;
+            byte_ptr[11] = 0xE0;
+
+            GLUMITY_PRINT_COLOR(CON_YELLOW, "Inserted absolute assembly redirection jump for: %s\n", MY_PLUGIN, plugin.dllPath);
+            VirtualProtect((LPVOID)plugin.entryPoint, 12, oldProtect, &oldProtect);
+            FlushInstructionCache(GetCurrentProcess(), (LPCVOID)plugin.entryPoint, 12);
+        }
+
+        DeadMemoryBlock zombie = {program, plugin.tccState, plugin.name};
+        g_zombieBlocks.push_back(zombie);
+    }
+
+    g_compiledScripts.clear();
+
+    for (const std::string &scriptPath : pathsToReload)
+    {
+        GLUMITY_PRINT_COLOR(CON_YELLOW, "Recompiling script instance: %s\n", MY_PLUGIN, scriptPath.c_str());
+        LoadAndRunSingleScript(std::filesystem::path(scriptPath), libs.c_str(), incs.c_str());
+    }
 
     g_isReloading = false;
 }
@@ -192,5 +241,15 @@ GLUMITYV2_PLUGIN_ENTRY
 GLUMITYV2_PLUGIN_EXIT
 {
     GLUMITYV2_GAME_HOOK_CLEAN_ALL();
+
+    for (auto &zombie : g_zombieBlocks)
+    {
+        if (zombie.tccState)
+            tcc_delete((TCCState *)zombie.tccState);
+        if (zombie.address)
+            VirtualFree(zombie.address, 0, MEM_RELEASE);
+        if (zombie.name)
+            free(zombie.name);
+    }
     return 1;
 }

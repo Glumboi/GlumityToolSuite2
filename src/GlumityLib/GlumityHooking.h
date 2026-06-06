@@ -58,6 +58,7 @@ inline void GlumityV2_MakeHookAtomic(void **original_ptr, void *hook_ptr)
     }
 
 #define GLUMITYV2_GAME_HOOK_TYPE(retType, name) typedef retType(*name)
+#define GLUMITYV2_FUNC_TYPE(retType, name) typedef retType(*name)
 
 #define GLUMITYV2_GAME_HOOK_CLEAN_ALL() \
     MH_DisableHook(MH_ALL_HOOKS);       \
