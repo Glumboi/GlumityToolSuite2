@@ -126,8 +126,8 @@ VOID HotReloadJITScripts()
     for (auto &plugin : g_compiledScripts)
     {
         plugin.second.exitPoint();
-        free(plugin.first);
         tcc_delete((TCCState *)plugin.second.tccState);
+        free(plugin.first);
     }
     g_compiledScripts.clear();
 
@@ -182,41 +182,38 @@ VOID Setup()
 
     char libs[MAX_PATH];
     strcpy_s(libs, sizeof(libs), pathBuffer);
-
     char incs[MAX_PATH];
     strcpy_s(incs, sizeof(incs), pathBuffer);
-
-    char tccDllPath[MAX_PATH];
-    strcpy_s(tccDllPath, sizeof(tccDllPath), pathBuffer);
-    strcat_s(tccDllPath, sizeof(tccDllPath), "libtcc.dll");
-
-    HMODULE hTcc = LoadLibraryA(tccDllPath);
-    if (!hTcc)
-    {
-        GLUMITY_PRINT_COLOR(CON_RED, "Failed to manually resolve sibling dependency: %s\n", MY_PLUGIN, tccDllPath);
-        return;
-    }
-    GLUMITY_PRINT_COLOR(CON_GREEN, "Successfully resolved dependency internally: %s\n", MY_PLUGIN, tccDllPath);
 
     strcat_s(libs, sizeof(libs), "tcc_libs");
     strcat_s(incs, sizeof(incs), "tcc_include");
 
     GetPluginDirectory(hCurrentDll, pathBuffer, sizeof(pathBuffer));
     ProcessJITScriptsFolder(pathBuffer, libs, incs);
+}
 
-    // Enter keyboard loop
+VOID KeyboardLoop()
+{
     while (1)
     {
-        BOOL isKeyDown = (GetAsyncKeyState(VK_END) & 0x8000) != 0;
-        if (isKeyDown)
+        if ((GetAsyncKeyState(VK_END) & 0x8000) != 0)
+        {
             HotReloadJITScripts();
-        Sleep(5);
+
+            // Wait here until the user physically lets go of the key
+            while (GetAsyncKeyState(VK_END) & 0x8000)
+            {
+                Sleep(10);
+            }
+        }
+        Sleep(10);
     }
 }
 
 GLUMITYV2_PLUGIN_ENTRY
 {
-    GLUMITYV2_PLUGIN_THREADRUN(Setup, 0);
+    Setup();
+    GLUMITYV2_PLUGIN_THREADRUN(KeyboardLoop, 0);
 }
 
 GLUMITYV2_PLUGIN_EXIT
