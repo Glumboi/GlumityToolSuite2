@@ -146,17 +146,14 @@ VOID HotReloadJITScripts()
 
     g_isReloading = true;
 
-    // STEP 1: Notify active scripts to strip their current hooks
     for (auto &[path, plugin] : g_activePlugins)
     {
         if (plugin.exitPoint)
         {
-            plugin.exitPoint(); // <-- Must trigger GLUMITYV2_GAME_HOOK_CLEAN_ALL() inside the script
+            plugin.exitPoint(); 
         }
     }
 
-    // FIXED TECHNIQUE: Remove hooks from MinHook's internal state machine entirely.
-    // This cleanly un-patches the original 12 bytes of the game code so MinHook can read it again.
     for (void *targetAddress : g_trackedHookTargets)
     {
         if (targetAddress)
@@ -168,10 +165,8 @@ VOID HotReloadJITScripts()
     }
     g_trackedHookTargets.clear();
 
-    // Sleep briefly to ensure executing game loops fall back onto the clean game code
     Sleep(30);
 
-    // STEP 2: Cache active script tracks into the persistence queue
     std::vector<std::string> pathsToReload;
     for (auto &[path, plugin] : g_activePlugins)
     {
@@ -183,7 +178,6 @@ VOID HotReloadJITScripts()
 
     g_activePlugins.clear();
 
-    // STEP 3: Recompile and apply fresh script updates natively
     for (const std::string &scriptPath : pathsToReload)
     {
         GLUMITY_PRINT_COLOR(CON_YELLOW, "Applying script updates: %s\n", MY_PLUGIN, scriptPath.c_str());
