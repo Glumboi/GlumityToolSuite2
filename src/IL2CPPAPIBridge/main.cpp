@@ -198,13 +198,15 @@ VOID KeyboardLoop()
     {
         if ((GetAsyncKeyState(VK_END) & 0x8000) != 0)
         {
+            GLUMITY_PRINT_COLOR(CON_CYAN, "End pressed, reloading jit_scripts...\n", MY_PLUGIN);
             HotReloadJITScripts();
 
-            // Wait here until the user physically lets go of the key
             while (GetAsyncKeyState(VK_END) & 0x8000)
             {
                 Sleep(10);
             }
+
+            Sleep(50);
         }
         Sleep(10);
     }
