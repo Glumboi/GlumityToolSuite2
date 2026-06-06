@@ -20,6 +20,7 @@ inline std::map<std::string, GlumityGeneric_Func> hardApiFuncs = {
     {"MH_CreateHook", reinterpret_cast<GlumityGeneric_Func>(&MH_CreateHook)},
     {"MH_EnableHook", reinterpret_cast<GlumityGeneric_Func>(&MH_EnableHook)},
     {"Glumity_GetErrorMessage", reinterpret_cast<GlumityGeneric_Func>(&Glumity_GetErrorMessage)},
+    {"MH_RemoveHook", reinterpret_cast<GlumityGeneric_Func>(&MH_RemoveHook)},
 };
 
 // hard coded libraries to link to tcc

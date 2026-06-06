@@ -9,7 +9,7 @@ void GlumityPlugin_printf(const char *fmt, const char *printHeaderInner, ...);
 
 #define GLUMITYV2_INIT_HOOKING(pluginName, onFail)                                                      \
     MH_STATUS stat = MH_Initialize();                                                                   \
-    if (stat != MH_OK && stat != MH_ERROR_ALREADY_INITIALIZED)                                                                                  \
+    if (stat != MH_OK && stat != MH_ERROR_ALREADY_INITIALIZED)                                          \
     {                                                                                                   \
         GLUMITY_PRINT_COLOR(CON_RED, "Failed to initialize Minhook! (Status: %d)\n", pluginName, stat); \
         onFail;                                                                                         \
@@ -41,5 +41,9 @@ void GlumityPlugin_printf(const char *fmt, const char *printHeaderInner, ...);
     }
 
 #define GLUMITYV2_GAME_HOOK_TYPE(retType, name) typedef retType(*name)
+
+#define GLUMITYV2_GAME_HOOK_CLEAN_ALL() \
+    MH_DisableHook(MH_ALL_HOOKS);       \
+    MH_RemoveHook(MH_ALL_HOOKS);
 
 #endif

@@ -268,7 +268,7 @@ void PerformAddressLookup(const char *query)
                   "}\r\n\r\n"
                   "GLUMITYV2_PLUGIN_EXIT\r\n"
                   "{\r\n"
-                  "    MH_DisableHook(MH_ALL_HOOKS);\r\n"
+                  "    GLUMITYV2_GAME_HOOK_CLEAN_ALL();\r\n"
                   "}",
                   className, methodName, funcPtr,                                      // Header outputs
                   className,                                                           // struct %s;
