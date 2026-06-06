@@ -87,6 +87,7 @@ typedef struct
     // For the bridge only
     void *tccState;
     size_t compiledSz;
+    void* programBase;
 } GlumityPlugin;
 
 #endif

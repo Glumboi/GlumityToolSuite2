@@ -3,6 +3,7 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <set>
 #include <filesystem>
 #include <memoryapi.h>
 
@@ -19,6 +20,19 @@ struct DeadMemoryBlock
     char *name;
 };
 std::vector<DeadMemoryBlock> g_zombieBlocks;
+
+std::map<std::string, GlumityPlugin> g_activePlugins;
+std::set<void *> g_trackedHookTargets;
+
+extern "C" __declspec(dllexport) MH_STATUS __cdecl GlumityV2_TrackedCreateHook(LPVOID pTarget, LPVOID pDetour, LPVOID *ppOriginal)
+{
+    MH_STATUS status = MH_CreateHook(pTarget, pDetour, ppOriginal);
+    if (status == MH_OK || status == MH_ERROR_ALREADY_CREATED)
+    {
+        g_trackedHookTargets.insert(pTarget);
+    }
+    return status;
+}
 
 VOID TCC_Error_Handler(void *opaque, const char *msg)
 {
@@ -43,6 +57,8 @@ void LoadAndRunSingleScript(const std::filesystem::path &scriptPath, const char 
         tcc_delete(tccState);
         return;
     }
+
+    tcc_add_symbol(tccState, "MH_CreateHook", (const void *)GlumityV2_TrackedCreateHook);
 
     for (auto &apiFunc : hardApiFuncs)
         tcc_add_symbol(tccState, apiFunc.first.c_str(), (const void *)apiFunc.second);
@@ -87,10 +103,11 @@ void LoadAndRunSingleScript(const std::filesystem::path &scriptPath, const char 
     plugin.hDll = NULL;
     plugin.name = _strdup(scriptPath.filename().string().c_str());
     plugin.compiledSz = size;
+    plugin.programBase = program;
 
     if (plugin.entryPoint)
     {
-        g_compiledScripts[program] = plugin;
+        g_activePlugins[scriptPathString] = plugin;
         plugin.entryPoint();
     }
 }
@@ -116,12 +133,6 @@ VOID ProcessJITScriptsFolder(const char *targetProgramFolder, const char *libDir
     }
 }
 
-// Global safe exit point wrapper for running active threads
-VOID *HookStub()
-{
-    return nullptr;
-}
-
 VOID HotReloadJITScripts()
 {
     HMODULE hCurrentDll = GetModuleHandleA("IL2CPPAPIBridge.dll");
@@ -135,55 +146,47 @@ VOID HotReloadJITScripts()
 
     g_isReloading = true;
 
-    for (auto &[program, plugin] : g_compiledScripts)
+    // STEP 1: Notify active scripts to strip their current hooks
+    for (auto &[path, plugin] : g_activePlugins)
     {
         if (plugin.exitPoint)
         {
-            plugin.exitPoint();
+            plugin.exitPoint(); // <-- Must trigger GLUMITYV2_GAME_HOOK_CLEAN_ALL() inside the script
         }
     }
 
-    std::vector<std::string> pathsToReload;
-
-    for (auto &[program, plugin] : g_compiledScripts)
+    // FIXED TECHNIQUE: Remove hooks from MinHook's internal state machine entirely.
+    // This cleanly un-patches the original 12 bytes of the game code so MinHook can read it again.
+    for (void *targetAddress : g_trackedHookTargets)
     {
-        if (plugin.dllPath != NULL)
+        if (targetAddress)
         {
-            pathsToReload.push_back(std::string(plugin.dllPath));
+            MH_DisableHook(targetAddress);
+            MH_RemoveHook(targetAddress);
+            GLUMITY_PRINT_COLOR(CON_YELLOW, "Safely restored game function bytes: %p\n", MY_PLUGIN, targetAddress);
         }
+    }
+    g_trackedHookTargets.clear();
 
-        if (plugin.entryPoint)
-        {
-            DWORD oldProtect;
-            VirtualProtect((LPVOID)plugin.entryPoint, 12, PAGE_EXECUTE_READWRITE, &oldProtect);
+    // Sleep briefly to ensure executing game loops fall back onto the clean game code
+    Sleep(30);
 
-            unsigned char *byte_ptr = (unsigned char *)plugin.entryPoint;
+    // STEP 2: Cache active script tracks into the persistence queue
+    std::vector<std::string> pathsToReload;
+    for (auto &[path, plugin] : g_activePlugins)
+    {
+        pathsToReload.push_back(path);
 
-            // mov rax, [address]
-            byte_ptr[0] = 0x48;
-            byte_ptr[1] = 0xB8;
-
-            void *targetAddress = (void *)&HookStub;
-            memcpy_s(&byte_ptr[2], 8, &targetAddress, sizeof(void *));
-
-            // jmp rax
-            byte_ptr[10] = 0xFF;
-            byte_ptr[11] = 0xE0;
-
-            GLUMITY_PRINT_COLOR(CON_YELLOW, "Inserted absolute assembly redirection jump for: %s\n", MY_PLUGIN, plugin.dllPath);
-            VirtualProtect((LPVOID)plugin.entryPoint, 12, oldProtect, &oldProtect);
-            FlushInstructionCache(GetCurrentProcess(), (LPCVOID)plugin.entryPoint, 12);
-        }
-
-        DeadMemoryBlock zombie = {program, plugin.tccState, plugin.name};
+        DeadMemoryBlock zombie = {plugin.programBase, plugin.tccState, plugin.name};
         g_zombieBlocks.push_back(zombie);
     }
 
-    g_compiledScripts.clear();
+    g_activePlugins.clear();
 
+    // STEP 3: Recompile and apply fresh script updates natively
     for (const std::string &scriptPath : pathsToReload)
     {
-        GLUMITY_PRINT_COLOR(CON_YELLOW, "Recompiling script instance: %s\n", MY_PLUGIN, scriptPath.c_str());
+        GLUMITY_PRINT_COLOR(CON_YELLOW, "Applying script updates: %s\n", MY_PLUGIN, scriptPath.c_str());
         LoadAndRunSingleScript(std::filesystem::path(scriptPath), libs.c_str(), incs.c_str());
     }
 
