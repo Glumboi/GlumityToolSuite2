@@ -4,6 +4,7 @@ import c "core:c/libc"
 import "core:fmt"
 import "core:strconv"
 import "core:strings"
+import "core:sys/windows"
 
 // Could be problematic if called by a plugin, never worked but lets export it anyway
 @(export)

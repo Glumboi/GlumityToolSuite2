@@ -2,7 +2,7 @@
 
 void *il2cpp_object_new_hook_v(IL2CPP_Class *klass)
 {
-    if (klass && klass->name && gb_verboseBridge)
+    if (klass && klass->name && g_verboseBridge)
         GLUMITY_PRINT_COLOR(CON_CYAN, "An object is being allocated! (%s)\n", MY_PLUGIN, klass->name);
 
     return target_il2cpp_object_new(klass);
@@ -11,7 +11,7 @@ void *il2cpp_object_new_hook_v(IL2CPP_Class *klass)
 void *il2cpp_runtime_invoke_hook_v(IL2CPP_MethodInfo *method, void *obj, void **params, void **exc)
 
 {
-    if (method && method->name && method->klass && method->klass->name && gb_verboseBridge)
+    if (method && method->name && method->klass && method->klass->name && g_verboseBridge)
     {
         bool isBanned = false;
 
@@ -123,10 +123,10 @@ void SetupIL2CPPHooks()
     GetModuleFileNameA(NULL, exePath, MAX_PATH);
     std::filesystem::path gameDir = std::filesystem::path(exePath).parent_path();
     std::filesystem::path verboseCheckPath = gameDir / VERBOSE_DEFINITION;
-    gb_verboseBridge = std::filesystem::exists(verboseCheckPath);
+    g_verboseBridge = std::filesystem::exists(verboseCheckPath);
     GLUMITY_PRINT_COLOR(CON_YELLOW, "Verbose: %d (Checked path: %s)\n",
                         MY_PLUGIN,
-                        gb_verboseBridge,
+                        g_verboseBridge,
                         verboseCheckPath.string().c_str());
 
     GLUMITYV2_INIT_HOOKING(MY_PLUGIN, return)
@@ -134,7 +134,7 @@ void SetupIL2CPPHooks()
         GLUMITY_PRINT_COLOR(CON_GREEN, "Initialized Minhook!\n", MY_PLUGIN);
     }
 
-    if (gb_verboseBridge) // Hook to different hooks, to avoid performance cost if verbosity is not desired
+    if (g_verboseBridge) // Hook to different hooks, to avoid performance cost if verbosity is not desired
     {
         GLUMITYV2_GAME_HOOK_CREATE("il2cpp_object_new", target_il2cpp_object_new, il2cpp_object_new_hook_v);
         GLUMITYV2_GAME_HOOK_CREATE("il2cpp_runtime_invoke", target_il2cpp_runtime_invoke, il2cpp_runtime_invoke_hook_v);

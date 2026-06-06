@@ -7,6 +7,20 @@
 
 void GlumityPlugin_printf(const char *fmt, const char *printHeaderInner, ...);
 
+inline void GlumityV2_MakeHookAtomic(void **original_ptr, void *hook_ptr)
+{
+#if defined(_MSC_VER)
+    InterlockedCompareExchangePointer(original_ptr, hook_ptr, NULL);
+#else
+    void *expected = NULL;
+    __asm__ __volatile__(
+        "lock cmpxchg %2, %0"
+        : "+m"(*original_ptr), "=a"(expected)
+        : "r"(hook_ptr), "a"(expected)
+        : "cc");
+#endif
+}
+
 #define GLUMITYV2_INIT_HOOKING(pluginName, onFail)                                                      \
     MH_STATUS stat = MH_Initialize();                                                                   \
     if (stat != MH_OK && stat != MH_ERROR_ALREADY_INITIALIZED)                                          \
@@ -23,7 +37,10 @@ void GlumityPlugin_printf(const char *fmt, const char *printHeaderInner, ...);
             &hook,                                                                                \
             (LPVOID *)&original);                                                                 \
         if (stat == MH_OK)                                                                        \
+        {                                                                                         \
             GLUMITY_PRINT_COLOR(CON_BLUE, "Created a hook: %s\n", GLUMITYLIB_PRINT_HEADER, name); \
+            GlumityV2_MakeHookAtomic((void **)&original, (void *)hook);                           \
+        }                                                                                         \
     }
 
 #define GLUMITYV2_GAME_HOOK_ENABLE_ALL(pluginName)                              \

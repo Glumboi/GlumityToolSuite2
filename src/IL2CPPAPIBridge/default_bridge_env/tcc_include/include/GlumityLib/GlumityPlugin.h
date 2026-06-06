@@ -21,36 +21,38 @@
 #endif
 
 typedef void (*GlumityPlugin_EntryPoint)(void);
-typedef void (*GlumityPlugin_ExitPoint)(void);
+typedef BOOL (*GlumityPlugin_ExitPoint)(void);
 typedef void (*GlumityGeneric_Func)(void);
 typedef void (*GlumityDependencyErrorCallback)(const char *failedDllName);
 
-#define GLUMITYV2_VERIFY_DEPENDENCY(dllName)                                           \
-    if (!GetModuleHandleA(dllName))                                                    \
+#define GLUMITYV2_VERIFY_DEPENDENCY(dllName)                                                                          \
+    if (!GetModuleHandleA(dllName))                                                                                   \
         GLUMITY_PRINT_COLOR(CON_RED, "Missing dependency: %s, functionality may be impaired!\n", MY_PLUGIN, dllName); \
-    else                                                                               \
+    else                                                                                                              \
         GLUMITY_PRINT_COLOR(CON_GREEN, "Found dependency: %s!\n", MY_PLUGIN, dllName);
 
 #define GLUMITYV2_PLUGIN_ENTRY \
     EXPORT void GlumityMain(void)
 
 #define GLUMITYV2_PLUGIN_EXIT \
-    EXPORT void GlumityExit(void)
+    EXPORT BOOL GlumityExit(void) // return true/1 if finished cleaning up all hooks
 
 // Recommended to use this to run most code,
 // specially function hooking since you have to rely on the dumper being loaded
-#define GLUMITYV2_PLUGIN_THREADRUN(function, pParam)                                     \
-    freopen("CONOUT$", "w", stdout); /* enable plugin printing */                        \
-    HANDLE hThread = CreateThread(0, 0, (LPTHREAD_START_ROUTINE)function, pParam, 0, 0); \
-    if (hThread)                                                                         \
-        CloseHandle(hThread);
+#define GLUMITYV2_PLUGIN_THREADRUN(function, pParam)                                         \
+    {                                                                                        \
+        freopen("CONOUT$", "w", stdout); /* enable plugin printing */                        \
+        HANDLE hThread = CreateThread(0, 0, (LPTHREAD_START_ROUTINE)function, pParam, 0, 0); \
+        if (hThread)                                                                         \
+            CloseHandle(hThread);                                                            \
+    }
 
 /// @brief Printf for glumity plugin specific code, uses malloc and free for a temp char*, caller doesn't need to manage
 /// @param fmt
 /// @param
 void GlumityPlugin_printf(const char *fmt, const char *printHeaderInner, ...);
 
-void GetPluginDirectory(HMODULE hModule, char* outBuffer, DWORD bufferSize);
+void GetPluginDirectory(HMODULE hModule, char *outBuffer, DWORD bufferSize);
 
 /**
  * @brief Prints a message in a specific color and immediately restores the original color layout.
@@ -82,9 +84,8 @@ typedef struct
 
     HMODULE hDll;
 
-
     // For the bridge only
-    void* tccState;
+    void *tccState;
 } GlumityPlugin;
 
 #endif
