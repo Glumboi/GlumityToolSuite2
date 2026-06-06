@@ -81,6 +81,10 @@ typedef struct
     GlumityPlugin_ExitPoint exitPoint;
 
     HMODULE hDll;
+
+
+    // For the bridge only
+    void* tccState;
 } GlumityPlugin;
 
 #endif

@@ -34,7 +34,6 @@ void IL2CPP_ResolveFunctions();
     if (dumperExports.GlumityV2Dumper_WaitForDumper)   \
     {                                                  \
         dumperExports.GlumityV2Dumper_WaitForDumper(); \
-        IL2CPP_ResolveFunctions();                     \
     }
 
 #define GLUMITYV2_DUMPER_GET_GAME_FUNCTION(className, functionName, dumperExports) \

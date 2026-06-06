@@ -6,6 +6,11 @@
 #include <stddef.h>
 #include <MinHook.h>
 
+static il2cpp_domain_get_t _il2cpp_domain_get;
+static  il2cpp_thread_attach_t _il2cpp_thread_attach;
+static  il2cpp_runtime_invoke_t _il2cpp_runtime_invoke;
+static  il2cpp_class_get_method_from_name_t _il2cpp_class_get_method_from_name;
+
 BOOL Glumity_GetErrorMessage(DWORD dwErrorCode, LPTSTR pBuffer, DWORD cchBufferLength)
 {
     if (cchBufferLength == 0)
@@ -14,7 +19,7 @@ BOOL Glumity_GetErrorMessage(DWORD dwErrorCode, LPTSTR pBuffer, DWORD cchBufferL
     }
 
     DWORD cchMsg = FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-                                 NULL,  /* (not used with FORMAT_MESSAGE_FROM_SYSTEM) */
+                                 NULL, /* (not used with FORMAT_MESSAGE_FROM_SYSTEM) */
                                  dwErrorCode,
                                  MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
                                  pBuffer,

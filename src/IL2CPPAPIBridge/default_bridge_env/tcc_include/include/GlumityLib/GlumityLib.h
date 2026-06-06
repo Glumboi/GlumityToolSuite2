@@ -42,11 +42,12 @@ extern "C"
     typedef void *(*il2cpp_runtime_invoke_t)(void *method, void *obj, void **params, void **exc);
     typedef void *(*il2cpp_class_get_method_from_name_t)(void *klass, const char *name, int argsCount);
 
-    // Global il2cpp function pointers
-    il2cpp_domain_get_t _il2cpp_domain_get;
-    il2cpp_thread_attach_t _il2cpp_thread_attach;
-    il2cpp_runtime_invoke_t _il2cpp_runtime_invoke;
-    il2cpp_class_get_method_from_name_t _il2cpp_class_get_method_from_name;
+    // Global il2cpp function pointers, related to invoking.
+    // Plugins should not use them manually
+    extern il2cpp_domain_get_t _il2cpp_domain_get;
+    extern il2cpp_thread_attach_t _il2cpp_thread_attach;
+    extern il2cpp_runtime_invoke_t _il2cpp_runtime_invoke;
+    extern il2cpp_class_get_method_from_name_t _il2cpp_class_get_method_from_name;
 
 #ifdef __cplusplus
 }
@@ -151,7 +152,7 @@ struct IL2CPP_Type
     union
     {
         uint32_t attrs;
-        int type; //enum Il2CppTypeEnum type;
+        int type; // enum Il2CppTypeEnum type;
         uint32_t num_mods;
         uint32_t byref;
         uint32_t pinned;
