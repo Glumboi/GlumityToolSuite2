@@ -130,9 +130,19 @@ VOID HotReloadJITScripts()
     char pathBuffer[MAX_PATH] = {0};
     GetPluginDirectory(hCurrentDll, pathBuffer, sizeof(pathBuffer));
 
-    std::filesystem::path baseDir(pathBuffer);
-    std::string libs = (baseDir / "tcc_libs").string();
-    std::string incs = (baseDir / "tcc_include").string();
+    size_t len = strlen(pathBuffer);
+    if (len > 0 && pathBuffer[len - 1] != '\\')
+    {
+        strcat_s(pathBuffer, sizeof(pathBuffer), "\\");
+    }
+
+    char libs[MAX_PATH];
+    strcpy_s(libs, sizeof(libs), pathBuffer);
+    char incs[MAX_PATH];
+    strcpy_s(incs, sizeof(incs), pathBuffer);
+
+    strcat_s(libs, sizeof(libs), "tcc_libs");
+    strcat_s(incs, sizeof(incs), "tcc_include");
 
     g_isReloading = true;
 
@@ -143,6 +153,9 @@ VOID HotReloadJITScripts()
             plugin.exitPoint();
         }
     }
+
+    MH_DisableHook(MH_ALL_HOOKS);
+    MH_Uninitialize();
 
     for (void *targetAddress : g_trackedHookTargets)
     {
@@ -168,10 +181,12 @@ VOID HotReloadJITScripts()
 
     g_activePlugins.clear();
 
+    MH_Initialize();
+
     for (const std::string &scriptPath : pathsToReload)
     {
         GLUMITY_PRINT_COLOR(CON_YELLOW, "Applying script updates: %s\n", MY_PLUGIN, scriptPath.c_str());
-        LoadAndRunSingleScript(std::filesystem::path(scriptPath), libs.c_str(), incs.c_str());
+        LoadAndRunSingleScript(std::filesystem::path(scriptPath), libs, incs);
     }
 
     g_isReloading = false;
