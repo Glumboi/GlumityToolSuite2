@@ -8,6 +8,10 @@
 
 #include "GlumityConsole.h"
 
+#ifndef GAME_ASSEMBLY
+#define GAME_ASSEMBLY "GameAssembly.dll"
+#endif 
+
 #define DLL_PATH_MAX 260
 #define GLUMITY_MAX_DEPS 16
 
@@ -87,7 +91,7 @@ typedef struct
     // For the bridge only
     void *tccState;
     size_t compiledSz;
-    void* programBase;
+    void *programBase;
 } GlumityPlugin;
 
 #endif

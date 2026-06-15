@@ -4,6 +4,8 @@
 #include <ctype.h>
 #include <stdio.h>
 
+#include "il2cppInternal.h"
+
 #define MY_PLUGIN "IL2CPPGUILookup"
 
 GlumityV2DumperExports dumperExports;
@@ -424,6 +426,7 @@ DWORD WINAPI WindowThread(LPVOID lpParam)
 {
     GLUMITYV2_VERIFY_DEPENDENCY("GlumityV2IL2CPPDumper");
     GLUMITYV2_DUMPER_WAITFOR_INIT(dumperExports);
+
     HINSTANCE hInstance = (HINSTANCE)lpParam;
     if (hInstance == NULL)
     {

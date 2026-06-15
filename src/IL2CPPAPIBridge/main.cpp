@@ -13,6 +13,8 @@
 #include "defines.h"
 #include "il2cppHooks.h"
 
+#include "il2cppInternal.h"
+
 struct DeadMemoryBlock
 {
     void *address;
@@ -24,7 +26,7 @@ std::vector<DeadMemoryBlock> g_zombieBlocks;
 std::map<std::string, GlumityPlugin> g_activePlugins;
 std::set<void *> g_trackedHookTargets;
 
-extern "C" __declspec(dllexport) MH_STATUS __cdecl GlumityV2_TrackedCreateHook(LPVOID pTarget, LPVOID pDetour, LPVOID *ppOriginal)
+extern "C" EXPORT MH_STATUS __cdecl GlumityV2_TrackedCreateHook(LPVOID pTarget, LPVOID pDetour, LPVOID *ppOriginal)
 {
     MH_STATUS status = MH_CreateHook(pTarget, pDetour, ppOriginal);
     if (status == MH_OK || status == MH_ERROR_ALREADY_CREATED)
@@ -150,7 +152,7 @@ VOID HotReloadJITScripts()
     {
         if (plugin.exitPoint)
         {
-            plugin.exitPoint(); 
+            plugin.exitPoint();
         }
     }
 

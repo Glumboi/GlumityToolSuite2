@@ -1,15 +1,15 @@
 #include "il2cppHooks.h"
+#include "il2cppInternal.h"
 
-void *il2cpp_object_new_hook_v(IL2CPP_Class *klass)
+void *il2cpp_object_new_hook_v(Il2CppClass *klass)
 {
     if (klass && klass->name && g_verboseBridge)
         GLUMITY_PRINT_COLOR(CON_CYAN, "An object is being allocated! (%s)\n", MY_PLUGIN, klass->name);
 
-    return target_il2cpp_object_new(klass);
+    return il2cpp_object_new(klass);
 }
 
-void *il2cpp_runtime_invoke_hook_v(IL2CPP_MethodInfo *method, void *obj, void **params, void **exc)
-
+void *il2cpp_runtime_invoke_hook_v(const MethodInfo *method, void *obj, void **params, Il2CppObject **exc)
 {
     if (method && method->name && method->klass && method->klass->name && g_verboseBridge)
     {
@@ -40,18 +40,18 @@ void *il2cpp_runtime_invoke_hook_v(IL2CPP_MethodInfo *method, void *obj, void **
         }
     }
 
-    return target_il2cpp_runtime_invoke(method, obj, params, exc);
+    return il2cpp_runtime_invoke(method, obj, params, exc);
 }
 
-void *il2cpp_object_new_hook(IL2CPP_Class *klass)
+void *il2cpp_object_new_hook(Il2CppClass *klass)
 {
-    return target_il2cpp_object_new(klass);
+    return il2cpp_object_new(klass);
 }
 
 bool lastBlocked = true;
-void *il2cpp_runtime_invoke_hook(IL2CPP_MethodInfo *method, void *obj, void **params, void **exc)
+void *il2cpp_runtime_invoke_hook(const MethodInfo *method, void *obj, void **params, Il2CppObject **exc)
 {
-    return target_il2cpp_runtime_invoke(method, obj, params, exc);
+    return il2cpp_runtime_invoke(method, obj, params, exc);
 }
 
 void LoadIL2CPPApi(HMODULE hModule)
@@ -107,17 +107,13 @@ void SetupIL2CPPHooks()
     }
 
     GLUMITY_PRINT_COLOR(CON_BLUE, "Found unity IL2CPP GameAssembly.dll (starting export parsing...)\n", MY_PLUGIN);
-    LoadIL2CPPApi(hMod);
 
-    if (hardApiFuncs.find("il2cpp_object_new") == hardApiFuncs.end() ||
-        hardApiFuncs.find("il2cpp_runtime_invoke") == hardApiFuncs.end())
+    LoadIL2CPP(hMod);
+    if (!il2cpp_object_new)
     {
         GLUMITY_PRINT_COLOR(CON_YELLOW, "Could not locate required internal API endpoints inside map!\n", MY_PLUGIN);
         return;
     }
-
-    target_il2cpp_object_new = (il2cpp_object_new_t)hardApiFuncs["il2cpp_object_new"];
-    target_il2cpp_runtime_invoke = (il2cpp_runtime_invoke_t2)hardApiFuncs["il2cpp_runtime_invoke"];
 
     // check verbosity
     char exePath[MAX_PATH];
@@ -137,13 +133,13 @@ void SetupIL2CPPHooks()
 
     if (g_verboseBridge) // Hook to different hooks, to avoid performance cost if verbosity is not desired
     {
-        GLUMITYV2_GAME_HOOK_CREATE("il2cpp_object_new", target_il2cpp_object_new, il2cpp_object_new_hook_v);
-        GLUMITYV2_GAME_HOOK_CREATE("il2cpp_runtime_invoke", target_il2cpp_runtime_invoke, il2cpp_runtime_invoke_hook_v);
+        GLUMITYV2_GAME_HOOK_CREATE("il2cpp_object_new", il2cpp_object_new, il2cpp_object_new_hook_v);
+        GLUMITYV2_GAME_HOOK_CREATE("il2cpp_runtime_invoke", il2cpp_runtime_invoke, il2cpp_runtime_invoke_hook_v);
     }
     else
     {
-        GLUMITYV2_GAME_HOOK_CREATE("il2cpp_object_new", target_il2cpp_object_new, il2cpp_object_new_hook);
-        GLUMITYV2_GAME_HOOK_CREATE("il2cpp_runtime_invoke", target_il2cpp_runtime_invoke, il2cpp_runtime_invoke_hook);
+        GLUMITYV2_GAME_HOOK_CREATE("il2cpp_object_new", il2cpp_object_new, il2cpp_object_new_hook);
+        GLUMITYV2_GAME_HOOK_CREATE("il2cpp_runtime_invoke", il2cpp_runtime_invoke, il2cpp_runtime_invoke_hook);
     }
 
     GLUMITYV2_GAME_HOOK_ENABLE_ALL(MY_PLUGIN);
