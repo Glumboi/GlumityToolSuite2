@@ -47,32 +47,6 @@ extern "C"
 }
 #endif
 
-// Some il2cpp type helpers
-// e.g:
-/*
-struct DinoInfo__Fields {
-    // 0x50 bytes of padding
-    PAD_TO(0x00, 0x50);
-
-    bool isSelected;    // Offset 0x50
-    bool owned;         // Offset 0x51
-
-    // Preloader is at 0x58. Current offset is 0x52.
-    PAD_TO(0x52, 0x58);
-    void* Preloader;    // Offset 0x58
-};
-*/
-
-// Combines two tokens together (needed for unique padding names)
-#define COMBINE_INNER(a, b) a##b
-#define COMBINE(a, b) COMBINE_INNER(a, b)
-
-// Creates a padding array of a specific size
-#define PAD(size) uint8_t COMBINE(pad_, __LINE__)[size]
-
-// Creates padding from current position to a target offset
-#define PAD_TO(current, target) uint8_t COMBINE(pad_, __LINE__)[target - current]
-
 typedef struct IL2CPP_String__Fields
 {
     int32_t m_stringLength;

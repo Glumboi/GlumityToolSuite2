@@ -3,7 +3,9 @@
 
 #include <stdint.h>
 #include <stddef.h>
+#include "GlumityLib.h"
 #include "il2cppInternalMetadata.h"
+#include "GlumityTypeHelpers.h"
 #include "il2cppInternalPInvokeSupport.h"
 
 #define THREAD_LOCAL_STATIC_MASK (int32_t)0x80000000
@@ -35,7 +37,7 @@ struct Il2CppMetadataRegistration;
 struct Il2CppCodeRegistration;
 
 typedef struct Il2CppClass Il2CppClass;
-typedef struct MethodInfo MethodInfo;  
+typedef struct MethodInfo MethodInfo;
 typedef struct Il2CppGuid Il2CppGuid;
 typedef struct Il2CppImage Il2CppImage;
 typedef struct Il2CppAppDomain Il2CppAppDomain;
@@ -317,34 +319,27 @@ typedef union Il2CppRGCTXData
 typedef struct MethodInfo
 {
     Il2CppMethodPointer methodPointer;
-    Il2CppMethodPointer virtualMethodPointer;
     InvokerMethod invoker_method;
-    const char *name;
-    Il2CppClass *klass;
-    const Il2CppType *return_type;
-    const Il2CppType **parameters;
-
+    char const *name;
+    struct Il2CppClass *klass;
+    struct Il2CppType const *return_type;
+    struct ParameterInfo const *parameters;
     union
     {
-        const Il2CppRGCTXData *rgctx_data;
+        union IL2CPP_RGCTXData const *rgctx_data;
         Il2CppMetadataMethodDefinitionHandle methodMetadataHandle;
-    };
-
+    } Il2CppVariant;
     union
     {
-        const Il2CppGenericMethod *genericMethod;
+        struct IL2CPP_GenericMethod const *genericMethod;
         Il2CppMetadataGenericContainerHandle genericContainerHandle;
     };
-
     uint32_t token;
+    uint16_t flags;
     uint16_t iflags;
     uint16_t slot;
     uint8_t parameters_count;
-    uint8_t is_generic : 1;
-    uint8_t is_inflated : 1;
-    uint8_t wrapper_type : 1;
-    uint8_t has_full_generic_sharing_signature : 1;
-    uint8_t indirect_call_via_invokers : 1;
+   PAD(0x8);
 } MethodInfo;
 
 typedef struct Il2CppRuntimeInterfaceOffsetPair

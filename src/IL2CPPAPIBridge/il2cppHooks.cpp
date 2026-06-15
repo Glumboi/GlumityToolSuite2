@@ -23,7 +23,7 @@ void *il2cpp_runtime_invoke_hook_v(const MethodInfo *method, void *obj, void **p
                 break;
             }
         }
-
+        
         if (!isBanned)
         {
             if (prntCntr % 2 == 0)
@@ -52,45 +52,6 @@ bool lastBlocked = true;
 void *il2cpp_runtime_invoke_hook(const MethodInfo *method, void *obj, void **params, Il2CppObject **exc)
 {
     return il2cpp_runtime_invoke(method, obj, params, exc);
-}
-
-void LoadIL2CPPApi(HMODULE hModule)
-{
-    PIMAGE_DOS_HEADER dosHeader = (PIMAGE_DOS_HEADER)hModule;
-    if (dosHeader->e_magic != IMAGE_DOS_SIGNATURE)
-        return;
-
-    PIMAGE_NT_HEADERS ntHeaders = (PIMAGE_NT_HEADERS)((BYTE *)hModule + dosHeader->e_lfanew);
-    if (ntHeaders->Signature != IMAGE_NT_SIGNATURE)
-        return;
-
-    IMAGE_DATA_DIRECTORY exportDataDir = ntHeaders->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT];
-    if (exportDataDir.VirtualAddress == 0)
-    {
-        GlumityPlugin_printf("No exported functions found in this module.\n", MY_PLUGIN);
-        return;
-    }
-
-    PIMAGE_EXPORT_DIRECTORY exportDir = (PIMAGE_EXPORT_DIRECTORY)((BYTE *)hModule + exportDataDir.VirtualAddress);
-    DWORD *nameRvas = (DWORD *)((BYTE *)hModule + exportDir->AddressOfNames);
-    WORD *nameOrdinals = (WORD *)((BYTE *)hModule + exportDir->AddressOfNameOrdinals);
-    DWORD *functionAddresses = (DWORD *)((BYTE *)hModule + exportDir->AddressOfFunctions);
-
-    GLUMITY_PRINT_COLOR(CON_YELLOW, "Exported Functions (%d named functions):\n", MY_PLUGIN, exportDir->NumberOfNames);
-
-    for (DWORD i = 0; i < exportDir->NumberOfNames; i++)
-    {
-        char *functionName = (char *)((BYTE *)hModule + nameRvas[i]);
-        WORD ordinal = nameOrdinals[i];
-        void *functionAddress = (BYTE *)hModule + functionAddresses[ordinal];
-        hardApiFuncs[functionName] = (GlumityGeneric_Func)functionAddress;
-        if (i % 2 == 0)
-        {
-            GlumityPlugin_printf(" - %s [At: %p]\n", MY_PLUGIN, functionName, functionAddress);
-        }
-        else
-            GLUMITY_PRINT_COLOR(CON_CYAN, " - %s [At: %p]\n", MY_PLUGIN, functionName, functionAddress);
-    }
 }
 
 void SetupIL2CPPHooks()

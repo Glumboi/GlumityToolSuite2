@@ -39,9 +39,9 @@ void IL2CPP_ResolveFunctions()
 }
 #else
 #include "il2cppInternal.h"
+#pragma message("Warning: Currently defaulting to new il2cpp internal api! Make sure the plugin is compatible...")
 void IL2CPP_ResolveFunctions()
 {
-#pragma message("Warning: Currently defaulting to new il2cpp internal api! Make sure the plugin is compatible...")
     LoadIL2CPP(GetModuleHandleA(GAME_ASSEMBLY));
 }
 #endif
