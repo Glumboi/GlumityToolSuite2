@@ -10,6 +10,10 @@
 
 #include "il2cppInternal.h"
 
+#ifndef GAME_ASSEMBLY
+#define GAME_ASSEMBLY "GameAssembly.dll"
+#endif 
+
 #define GLUMITYLIB_PRINT_HEADER "GlumityV2Lib"
 
 #define GLUMITYV2_DUMPER_MODULE "GlumityV2IL2CPPDumper"

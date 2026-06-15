@@ -1,25 +1,28 @@
 #ifndef GLUMTIYV2_OLD_IL2CPP
+#define GLUMTIYV2_OLD_IL2CPP
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
 #include <stddef.h>
 #include <MinHook.h>
 #include <windef.h>
-#define GLUMTIYV2_OLD_IL2CPP
 
-    typedef void *(*il2cpp_domain_get_t)();
-    typedef void *(*il2cpp_thread_attach_t)(void *domain);
-    typedef void *(*il2cpp_runtime_invoke_t)(void *method, void *obj, void **params, void **exc);
-    typedef void *(*il2cpp_class_get_method_from_name_t)(void *klass, const char *name, int argsCount);
-
-    // Global il2cpp function pointers, related to invoking.
-    // Plugins should not use them manually
-    extern il2cpp_domain_get_t _il2cpp_domain_get;
-    extern il2cpp_thread_attach_t _il2cpp_thread_attach;
-    extern il2cpp_runtime_invoke_t _il2cpp_runtime_invoke;
-    extern il2cpp_class_get_method_from_name_t _il2cpp_class_get_method_from_name;
+#include "GlumityLib.h"
 
 #ifdef GLUMTIYV2_USE_OLD_IL2CPP_INTERFACE
+
+typedef void *(*il2cpp_domain_get_t)();
+typedef void *(*il2cpp_thread_attach_t)(void *domain);
+typedef void *(*il2cpp_runtime_invoke_t)(void *method, void *obj, void **params, void **exc);
+typedef void *(*il2cpp_class_get_method_from_name_t)(void *klass, const char *name, int argsCount);
+
+// Global il2cpp function pointers, related to invoking.
+// Plugins should not use them manually
+extern il2cpp_domain_get_t _il2cpp_domain_get;
+extern il2cpp_thread_attach_t _il2cpp_thread_attach;
+extern il2cpp_runtime_invoke_t _il2cpp_runtime_invoke;
+extern il2cpp_class_get_method_from_name_t _il2cpp_class_get_method_from_name;
 
 typedef void (*IL2CPP_Method_Pointer)();
 typedef void *(*InvokerMethod)(IL2CPP_Method_Pointer, struct IL2CPP_MethodInfo const *, void *, void **);
