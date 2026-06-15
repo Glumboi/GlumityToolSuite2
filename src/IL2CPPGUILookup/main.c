@@ -1,3 +1,6 @@
+// TODOS:
+// -- add new il2cppinternal api to the template
+
 #include <windows.h>
 #include <GlumityLib.h>
 #include <string.h>
@@ -422,6 +425,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     }
     return 0;
 }
+
 DWORD WINAPI WindowThread(LPVOID lpParam)
 {
     GLUMITYV2_VERIFY_DEPENDENCY("GlumityV2IL2CPPDumper");
