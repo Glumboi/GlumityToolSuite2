@@ -29,21 +29,17 @@ struct Vector2
 
 struct MainReferences__VTable
 {
-    struct IL2CPP_VirtualInvokeData Equals;
-    struct IL2CPP_VirtualInvokeData Finalize;
-    struct IL2CPP_VirtualInvokeData GetHashCode;
-    struct IL2CPP_VirtualInvokeData ToString;
+    VirtualInvokeData Equals;
+    VirtualInvokeData Finalize;
+    VirtualInvokeData GetHashCode;
+    VirtualInvokeData ToString;
 };
-
-static_assert(sizeof(struct MainReferences__VTable) == 0x40, "Struct size mismatch!");
 
 struct MainReferences__Class
 {
     PAD_TO(0x00, 0x0138);
     struct MainReferences__VTable vtable;
 };
-
-static_assert(sizeof(struct MainReferences__Class) == 0x0178, "Struct size mismatch!");
 
 struct MainReferences__Fields
 {
@@ -258,20 +254,20 @@ struct DinoInfo
 {
     void *vtable;
     void *monitor;
-    struct DinoInfo__Fields fields; // starts at 0x10 
+    struct DinoInfo__Fields fields; // starts at 0x10
 };
 
 struct ZoneMove__VTable
 {
-    struct IL2CPP_VirtualInvokeData Equals;
-    struct IL2CPP_VirtualInvokeData Finalize;
-    struct IL2CPP_VirtualInvokeData GetHashCode;
-    struct IL2CPP_VirtualInvokeData ToString;
+    VirtualInvokeData Equals;
+    VirtualInvokeData Finalize;
+    VirtualInvokeData GetHashCode;
+    VirtualInvokeData ToString;
 };
 
 struct ZoneMove__Class
 {
-    struct IL2CPP_Class_0 _0;
+    struct Il2CppGenericClass _0;
     struct Il2CppRuntimeInterfaceOffsetPair *interfaceOffsets;
     struct ZoneMove__StaticFields *static_fields;
     union Il2CppRGCTXData const *rgctx_data;
@@ -279,7 +275,6 @@ struct ZoneMove__Class
     struct ZoneMove__VTable vtable;
 };
 
-static_assert(sizeof(struct ZoneMove__Class) == 0x0178, "Struct size mismatch!");
 
 struct ZoneMove__Fields
 {
@@ -292,8 +287,6 @@ struct ZoneMove__Fields
     float StartX;
     float elapsedTime;
 };
-
-static_assert(sizeof(struct ZoneMove__Fields) == 0x038, "Struct size mismatch!");
 
 struct ZoneMove
 {

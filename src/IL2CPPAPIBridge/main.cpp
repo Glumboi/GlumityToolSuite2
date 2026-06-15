@@ -26,16 +26,6 @@ std::vector<DeadMemoryBlock> g_zombieBlocks;
 std::map<std::string, GlumityPlugin> g_activePlugins;
 std::set<void *> g_trackedHookTargets;
 
-extern "C" EXPORT MH_STATUS __cdecl GlumityV2_TrackedCreateHook(LPVOID pTarget, LPVOID pDetour, LPVOID *ppOriginal)
-{
-    MH_STATUS status = MH_CreateHook(pTarget, pDetour, ppOriginal);
-    if (status == MH_OK || status == MH_ERROR_ALREADY_CREATED)
-    {
-        g_trackedHookTargets.insert(pTarget);
-    }
-    return status;
-}
-
 VOID TCC_Error_Handler(void *opaque, const char *msg)
 {
     GLUMITY_PRINT_COLOR(CON_RED, "%s\n", TCC_HEADER, msg);
@@ -59,8 +49,6 @@ void LoadAndRunSingleScript(const std::filesystem::path &scriptPath, const char 
         tcc_delete(tccState);
         return;
     }
-
-    tcc_add_symbol(tccState, "MH_CreateHook", (const void *)GlumityV2_TrackedCreateHook);
 
     for (auto &apiFunc : hardApiFuncs)
         tcc_add_symbol(tccState, apiFunc.first.c_str(), (const void *)apiFunc.second);

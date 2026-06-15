@@ -6,11 +6,6 @@
 #include "il2cppInternalApiFunctions.h"
 #undef DO_API
 
-static void *GlumityResolveSymbol(HMODULE module, const char *name)
-{
-    return (void *)GetProcAddress(module, name);
-}
-
 BOOL LoadIL2CPP(HMODULE module)
 {
     if (module == NULL)
@@ -19,7 +14,7 @@ BOOL LoadIL2CPP(HMODULE module)
     }
 
 #define DO_API(ret, name, args)                           \
-    name = (name##_t)GlumityResolveSymbol(module, #name); \
+    name = (name##_t)GetProcAddress(module, name);        \
     if (name == NULL)                                     \
     {                                                     \
         /* TODO: Handle missing exports here if needed */ \

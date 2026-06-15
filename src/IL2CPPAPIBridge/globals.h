@@ -5,6 +5,7 @@
 #include "include/libtcc.h"
 #include <vector>
 #include <string>
+#include <il2cppInternal.h>
 
 inline GlumityV2DumperExports g_dumperExports;
 inline bool g_verboseBridge = false;
@@ -21,6 +22,7 @@ inline std::map<std::string, GlumityGeneric_Func> hardApiFuncs = {
     {"MH_CreateHook", reinterpret_cast<GlumityGeneric_Func>(&MH_CreateHook)},
     {"MH_EnableHook", reinterpret_cast<GlumityGeneric_Func>(&MH_EnableHook)},
     {"Glumity_GetErrorMessage", reinterpret_cast<GlumityGeneric_Func>(&Glumity_GetErrorMessage)},
+    {"LoadIL2CPP", reinterpret_cast<GlumityGeneric_Func>(&LoadIL2CPP)},
     {"MH_RemoveHook", reinterpret_cast<GlumityGeneric_Func>(&MH_RemoveHook)},
 };
 

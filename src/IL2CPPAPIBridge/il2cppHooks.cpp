@@ -56,25 +56,9 @@ void *il2cpp_runtime_invoke_hook(const MethodInfo *method, void *obj, void **par
 
 void SetupIL2CPPHooks()
 {
-    GLUMITYV2_VERIFY_DEPENDENCY("GlumityV2IL2CPPDumper");
     GLUMITYV2_VERIFY_DEPENDENCY("libtcc");
+    GLUMITYV2_VERIFY_DEPENDENCY("GlumityV2IL2CPPDumper");
     GLUMITYV2_DUMPER_WAITFOR_INIT(g_dumperExports);
-
-    HMODULE hMod = GetModuleHandleA(GAME_ASSEMBLY);
-    if (!hMod)
-    {
-        GLUMITY_PRINT_COLOR(CON_RED, "Could not find unity IL2CPP GameAssembly.dll\n", MY_PLUGIN);
-        return;
-    }
-
-    GLUMITY_PRINT_COLOR(CON_BLUE, "Found unity IL2CPP GameAssembly.dll (starting export parsing...)\n", MY_PLUGIN);
-
-    LoadIL2CPP(hMod);
-    if (!il2cpp_object_new)
-    {
-        GLUMITY_PRINT_COLOR(CON_YELLOW, "Could not locate required internal API endpoints inside map!\n", MY_PLUGIN);
-        return;
-    }
 
     // check verbosity
     char exePath[MAX_PATH];

@@ -197,7 +197,7 @@ void PerformAddressLookup(const char *query)
         return;
     }
 
-    funcPtr = dumperExports.GlumityV2Dumper_GetFunctionPointer(className, methodName);
+    funcPtr = dumperExports.GlumityV2Dumper_GetFunctionPointer_Global(className, methodName);
 
     char bytesRes[512] = {0};
     if (funcPtr != NULL)
