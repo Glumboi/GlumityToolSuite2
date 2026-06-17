@@ -16,7 +16,6 @@ inline std::map<std::string, GlumityGeneric_Func> hardApiFuncs = {
     {"GlumityPlugin_printf", reinterpret_cast<GlumityGeneric_Func>(&GlumityPlugin_printf)},
     {"MH_DisableHook", reinterpret_cast<GlumityGeneric_Func>(&MH_DisableHook)},
     {"GlumityV2DumperExports_Init", reinterpret_cast<GlumityGeneric_Func>(&GlumityV2DumperExports_Init)},
-    {"IL2CPP_ResolveFunctions", reinterpret_cast<GlumityGeneric_Func>(&IL2CPP_ResolveFunctions)},
     {"IL2CPP_String_ToCString", reinterpret_cast<GlumityGeneric_Func>(&IL2CPP_String_ToCString)},
     {"MH_Initialize", reinterpret_cast<GlumityGeneric_Func>(&MH_Initialize)},
     {"MH_CreateHook", reinterpret_cast<GlumityGeneric_Func>(&MH_CreateHook)},

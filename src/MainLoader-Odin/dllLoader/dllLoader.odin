@@ -15,6 +15,11 @@ dllLoader_generic_function :: distinct proc()
 GLUMITY_ENTRY :: "GlumityMain"
 GLUMITY_EXIT :: "GlumityExit"
 
+PRIORITY_DLLS :: [?]string{
+	"GlumityV2IL2CPPDumper.dll",
+	"libtcc.dll",
+}
+
 dllLoader :: struct {
 	loadedDlls:  map[string]windows.HMODULE,
 	dllsToLoad:  map[string]bool,
@@ -89,7 +94,6 @@ dllLoader_LoadOldDll :: proc(loader: ^dllLoader, file: string, requestFile: stri
 		strings.unsafe_string_to_cstring(file),
 	)
 
-	// TODO: maybe implement old plugins so they work properly
 	cppDumper.old_plugin_supply_request(requestFile)
 }
 
@@ -147,11 +151,41 @@ dllLoader_LoadIL2CPPDumper :: proc(loader: ^dllLoader) {
 
 dllLoader_loadDlls :: proc(loader: ^dllLoader) {
 	if loader == nil {return}
-
 	if len(loader.dllsToLoad) <= 0 {return}
 
+	for priorityPath in PRIORITY_DLLS {
+		fullPath := strings.concatenate({loader.pluginsPath, "/", priorityPath})
+		defer delete(fullPath)
+		
+		forwardSlashed, _ := filepath.to_slash(fullPath)
+
+		if !(forwardSlashed in loader.dllsToLoad) {continue}
+
+		handle := windows.GetModuleHandleA(strings.unsafe_string_to_cstring(forwardSlashed))
+		if handle != nil {
+			delete_key(&loader.dllsToLoad, forwardSlashed)
+			continue
+		}
+
+		exports.Glumity_printf("Trying to load priority: %s\n", strings.unsafe_string_to_cstring(forwardSlashed))
+
+		mod := windows.LoadLibraryA(strings.unsafe_string_to_cstring(forwardSlashed))
+		if mod == nil {
+			lastErr := windows.GetLastError()
+			exports.Glumity_printf(
+				"Could not load priority library [%s] error: %d\n",
+				strings.unsafe_string_to_cstring(forwardSlashed),
+				lastErr,
+			)
+			delete_key(&loader.dllsToLoad, forwardSlashed)
+			continue
+		}
+
+		loader.loadedDlls[forwardSlashed] = mod
+		delete_key(&loader.dllsToLoad, forwardSlashed)
+	}
+
 	for k, _ in loader.dllsToLoad {
-		// check if a dll is already loaded (useful to avoid a crash when the dumper was loaded first)
 		handle := windows.GetModuleHandleA(strings.unsafe_string_to_cstring(k))
 		if handle != nil {continue}
 

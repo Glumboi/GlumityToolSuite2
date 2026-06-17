@@ -24,7 +24,6 @@ typedef struct
 } GlumityV2DumperExports;
 
 void GlumityV2DumperExports_Init(GlumityV2DumperExports *dumperExports);
-void IL2CPP_ResolveFunctions();
 
 #define GLUMITYV2_DUMPER_WAITFOR_INIT(dumperExports)   \
     if (!dumperExports.GlumityV2Dumper_WaitForDumper)  \
@@ -41,6 +40,6 @@ void IL2CPP_ResolveFunctions();
     dumperExports.GlumityV2Dumper_GetFunctionPointer_Global(className, functionName);
 
 #define GLUMITYV2_PLUGIN_INIT_IL2CPP \
-    if (IL2CPP::Initialize(true) && IL2CPP::Thread::Attach(IL2CPP::Domain::Get()))
+    il2cpp_thread_attach(il2cpp_domain_get())
 
 #endif

@@ -1,6 +1,6 @@
-#include <GlumityLib.h>
-#include <vector>
 #include <windows.h>
+#include <vector>
+#include <string>
 #include "Dumper.hpp"
 
 #define PRINT_HEAD "GlumityV2IL2CPPDumper"
@@ -10,12 +10,14 @@ GlumityV2Dumper::Dumper dumper;
 EXPORT void GlumityV2Dumper_WaitForDumper()
 {
     while (!dumper.GetInitState())
+    {
         Sleep(60);
+    }
 }
 
 EXPORT void *GlumityV2Dumper_GetFunctionPointer(Il2CppClass *klass, const char *name, int argsCount)
 {
-    if (!klass || !name)
+    if (!klass || !name || !il2cpp_class_get_method_from_name)
         return nullptr;
 
     const MethodInfo *method = il2cpp_class_get_method_from_name(klass, name, argsCount);
@@ -27,9 +29,16 @@ EXPORT void *GlumityV2Dumper_GetFunctionPointer(Il2CppClass *klass, const char *
 
 EXPORT char **GlumityV2Dumper_GetEverything()
 {
-    il2cpp_thread_attach(il2cpp_domain_get());
+    if (!dumper.GetInitState() || !il2cpp_domain_get || !il2cpp_thread_attach || !il2cpp_class_get_methods || !il2cpp_runtime_class_init)
+        return nullptr;
 
-    std::vector<char *> tempContainer;
+    Il2CppDomain *domain = il2cpp_domain_get();
+    if (!domain)
+        return nullptr;
+
+    il2cpp_thread_attach(domain);
+
+    std::vector<std::string> tempStrings;
 
     for (auto *klass : dumper.GetClasses())
     {
@@ -48,40 +57,31 @@ EXPORT char **GlumityV2Dumper_GetEverything()
             if (!method || !method->name)
                 continue;
 
-            size_t neededSize = strlen(className) + 1 + strlen(method->name) + 1;
-            char *allocation = (char *)malloc(neededSize);
-
-            if (allocation)
-            {
-                sprintf_s(allocation, neededSize, "%s %s", className, method->name);
-                tempContainer.push_back(allocation);
-            }
+            std::string entry = std::string(className) + " " + std::string(method->name);
+            tempStrings.push_back(entry);
         }
     }
 
-    if (tempContainer.empty())
+    if (tempStrings.empty())
         return nullptr;
 
-    char **finalResultBlock = (char **)malloc((tempContainer.size() + 1) * sizeof(char *));
-    if (!finalResultBlock)
-    {
-        for (char *ptr : tempContainer)
-            free(ptr);
+    char **resultList = (char **)malloc((tempStrings.size() + 1) * sizeof(char *));
+    if (!resultList)
         return nullptr;
-    }
 
-    for (size_t i = 0; i < tempContainer.size(); i++)
+    for (size_t i = 0; i < tempStrings.size(); ++i)
     {
-        finalResultBlock[i] = tempContainer[i];
+        resultList[i] = _strdup(tempStrings[i].c_str());
     }
+    resultList[tempStrings.size()] = nullptr;
 
-    finalResultBlock[tempContainer.size()] = nullptr;
-
-    return finalResultBlock;
+    return resultList;
 }
 
 EXPORT void *GlumityV2Dumper_GetFunctionPointer_Global(const char *className, const char *functionName)
 {
+    if (!il2cpp_class_get_method_from_name) return nullptr;
+    
     GlumityPlugin_printf("Beginning structured lookup for %s::%s\n", PRINT_HEAD, className, functionName);
 
     for (auto *klass : dumper.GetClasses())
@@ -111,11 +111,15 @@ EXPORT void *GlumityV2Dumper_GetFunctionPointer_FromModule(
     const char *className,
     const char *functionName)
 {
-    if (!module || !className || !functionName)
+    if (!module || !className || !functionName || !il2cpp_domain_get || !il2cpp_domain_get_assemblies || !il2cpp_class_get_method_from_name)
+        return nullptr;
+
+    Il2CppDomain *domain = il2cpp_domain_get();
+    if (!domain)
         return nullptr;
 
     size_t count = 0;
-    const Il2CppAssembly **assemblies = il2cpp_domain_get_assemblies(il2cpp_domain_get(), &count);
+    const Il2CppAssembly **assemblies = il2cpp_domain_get_assemblies(domain, &count);
     if (!assemblies)
         return nullptr;
 
@@ -129,7 +133,7 @@ EXPORT void *GlumityV2Dumper_GetFunctionPointer_FromModule(
         if (!imgName)
             continue;
 
-        if (strstr(imgName, module) != nullptr) // Loose name matching
+        if (strstr(imgName, module) != nullptr) 
         {
             size_t classCount = il2cpp_image_get_class_count((Il2CppImage *)image);
             for (size_t j = 0; j < classCount; j++)
@@ -163,5 +167,6 @@ GLUMITYV2_PLUGIN_ENTRY
 
 GLUMITYV2_PLUGIN_EXIT
 {
-    return 0;
+    dumper.~Dumper();
+    return TRUE;
 }

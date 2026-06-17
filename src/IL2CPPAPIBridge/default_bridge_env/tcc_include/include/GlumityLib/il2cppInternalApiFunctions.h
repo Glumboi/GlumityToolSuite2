@@ -214,6 +214,7 @@ DO_API(Il2CppObject *, il2cpp_runtime_invoke, (const MethodInfo *method, void *o
 DO_API(Il2CppObject *, il2cpp_runtime_invoke_convert_args, (const MethodInfo *method, void *obj, Il2CppObject **params, int paramCount, Il2CppObject **exc));
 DO_API(void, il2cpp_runtime_class_init, (TypeInfo * klass));
 DO_API(void, il2cpp_runtime_object_init, (Il2CppObject * obj));
+DO_API(bool, il2cpp_class_is_inited, (const Il2CppClass *klass));
 
 DO_API(void, il2cpp_runtime_object_init_exception, (Il2CppObject * obj, Il2CppObject **exc));
 
@@ -265,13 +266,13 @@ DO_API(void, il2cpp_free_captured_memory_snapshot, (Il2CppManagedMemorySnapshot 
 DO_API(void, il2cpp_set_find_plugin_callback, (Il2CppSetFindPlugInCallback method));
 
 // image
-DO_API(const Il2CppAssembly*, il2cpp_image_get_assembly, (const Il2CppImage * image));
-DO_API(const char*, il2cpp_image_get_name, (const Il2CppImage * image));
-DO_API(const char*, il2cpp_image_get_filename, (const Il2CppImage * image));
-DO_API(const MethodInfo*, il2cpp_image_get_entry_point, (const Il2CppImage * image));
+DO_API(const Il2CppAssembly *, il2cpp_image_get_assembly, (const Il2CppImage *image));
+DO_API(const char *, il2cpp_image_get_name, (const Il2CppImage *image));
+DO_API(const char *, il2cpp_image_get_filename, (const Il2CppImage *image));
+DO_API(const MethodInfo *, il2cpp_image_get_entry_point, (const Il2CppImage *image));
 
-DO_API(size_t, il2cpp_image_get_class_count, (const Il2CppImage * image));
-DO_API(const Il2CppClass*, il2cpp_image_get_class, (const Il2CppImage * image, size_t index));
+DO_API(size_t, il2cpp_image_get_class_count, (const Il2CppImage *image));
+DO_API(const Il2CppClass *, il2cpp_image_get_class, (const Il2CppImage *image, size_t index));
 
 #if IL2CPP_DEBUGGER_ENABLED
 // debug
