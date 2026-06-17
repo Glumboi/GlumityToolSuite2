@@ -42,12 +42,10 @@ static void* FindStrippedSymbol(HMODULE module, const char* name)
     // Fallback pattern resolution arrays for core engine symbols
     if (strcmp(name, "il2cpp_domain_get") == 0)
     {
-        // Pattern 1: 48 8B 05 ? ? ? ? C3 (mov rax, [rip+offset]; ret)
         unsigned char pattern1[] = { 0x48, 0x8B, 0x05, 0x00, 0x00, 0x00, 0x00, 0xC3 };
         unsigned char* match = ScanMemoryPattern(baseAddress, sizeOfImage, pattern1, "xxx????x");
         if (match) return match;
 
-        // Pattern 2: 48 83 EC 28 48 8B 05 ? ? ? ? 48 83 C4 28 C3
         unsigned char pattern2[] = { 0x48, 0x83, 0xEC, 0x28, 0x48, 0x8B, 0x05, 0x00, 0x00, 0x00, 0x00, 0x48, 0x83, 0xC4, 0x28, 0xC3 };
         match = ScanMemoryPattern(baseAddress, sizeOfImage, pattern2, "xxxxxxx????xxxxx");
         if (match) return match;
@@ -56,10 +54,8 @@ static void* FindStrippedSymbol(HMODULE module, const char* name)
     // Universal signature fallback hook: If il2cpp_domain_get is found, trace relative addresses
     if (il2cpp_domain_get != NULL)
     {
-        // Fallbacks for assemblies extraction functions if hidden
         if (strcmp(name, "il2cpp_domain_get_assemblies") == 0)
         {
-            // Usually found within close proximity trailing domain activation segments
             unsigned char subPattern[] = { 0x48, 0x8B, 0x01, 0x48, 0x85, 0xC0 };
             unsigned char* match = ScanMemoryPattern((unsigned char*)il2cpp_domain_get, 0x10000, subPattern, "xxxxxx");
             if (match) return match;
