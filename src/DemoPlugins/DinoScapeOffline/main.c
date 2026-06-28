@@ -3,6 +3,8 @@
 #include <string.h>
 #include "DinoScapeController.h"
 
+#define TARGET_IMAGE "Assembly-CSharp"
+
 GlumityV2DumperExports dumperExports;
 
 HMODULE ForceGetHmodule(const char *moduleName, bool isInApplicationFolder)
@@ -71,7 +73,7 @@ void Setup()
 {
     // Wait for dumper to finish initializing, crucial to avoid crashes
     GLUMITYV2_DUMPER_WAITFOR_INIT(dumperExports);
-    HANDLE hmod =  GetModuleHandleA(GAME_ASSEMBLY);
+    HANDLE hmod = GetModuleHandleA(GAME_ASSEMBLY);
 
     void *GetFullUrlPtr =
         dumperExports.GlumityV2Dumper_GetFunctionPointerWithPattern(hmod, "48 89 5C 24 ? 48 89 74 24 ? 57 48 83 EC ? 80 3D 1D DF F0 00 00");
@@ -79,11 +81,11 @@ void Setup()
     GlumityPlugin_printf("GetFullUrlPtr: %x\n", MY_PLUGIN, GetFullUrlPtr);
 
     void *MainReferencesUpdatePtr =
-        dumperExports.GlumityV2Dumper_GetFunctionPointer("MainReferences", "Update");
+        dumperExports.GlumityV2Dumper_GetFunctionPointer(TARGET_IMAGE, "MainReferences", "Update");
     GlumityPlugin_printf("MainReferencesUpdatePtr: %x\n", MY_PLUGIN, MainReferencesUpdatePtr);
 
     void *CheckIfOwnedPtr =
-        dumperExports.GlumityV2Dumper_GetFunctionPointer("DinoInfo", "CheckIfOwned");
+        dumperExports.GlumityV2Dumper_GetFunctionPointer(TARGET_IMAGE, "DinoInfo", "CheckIfOwned");
 
     GlumityPlugin_printf("CheckIfOwnedPtr: %x\n", MY_PLUGIN, CheckIfOwnedPtr);
 

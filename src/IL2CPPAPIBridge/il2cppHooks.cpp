@@ -1,12 +1,15 @@
 #include "il2cppHooks.h"
 #include "il2cppInternal.h"
 
+il2cpp_object_new_t o_il2cpp_object_new = nullptr;
+il2cpp_runtime_invoke_t o_il2cpp_runtime_invoke = nullptr;
+
 void *il2cpp_object_new_hook_v(Il2CppClass *klass)
 {
     if (klass && klass->name && g_verboseBridge)
         GLUMITY_PRINT_COLOR(CON_CYAN, "An object is being allocated! (%s)\n", MY_PLUGIN, klass->name);
 
-    return il2cpp_object_new(klass);
+    return o_il2cpp_object_new(klass);
 }
 
 void *il2cpp_runtime_invoke_hook_v(const MethodInfo *method, void *obj, void **params, Il2CppObject **exc)
@@ -40,18 +43,18 @@ void *il2cpp_runtime_invoke_hook_v(const MethodInfo *method, void *obj, void **p
         }
     }
 
-    return il2cpp_runtime_invoke(method, obj, params, exc);
+    return o_il2cpp_runtime_invoke(method, obj, params, exc);
 }
 
 void *il2cpp_object_new_hook(Il2CppClass *klass)
 {
-    return il2cpp_object_new(klass);
+    return o_il2cpp_object_new(klass);
 }
 
 bool lastBlocked = true;
 void *il2cpp_runtime_invoke_hook(const MethodInfo *method, void *obj, void **params, Il2CppObject **exc)
 {
-    return il2cpp_runtime_invoke(method, obj, params, exc);
+    return o_il2cpp_runtime_invoke(method, obj, params, exc);
 }
 
 void SetupIL2CPPHooks()
@@ -60,7 +63,6 @@ void SetupIL2CPPHooks()
     GLUMITYV2_VERIFY_DEPENDENCY("GlumityV2IL2CPPDumper");
     GLUMITYV2_DUMPER_WAITFOR_INIT(g_dumperExports);
 
-    // check verbosity
     char exePath[MAX_PATH];
     GetModuleFileNameA(NULL, exePath, MAX_PATH);
     std::filesystem::path gameDir = std::filesystem::path(exePath).parent_path();
@@ -76,15 +78,18 @@ void SetupIL2CPPHooks()
         GLUMITY_PRINT_COLOR(CON_GREEN, "Initialized Minhook!\n", MY_PLUGIN);
     }
 
-    if (g_verboseBridge) // Hook to different hooks, to avoid performance cost if verbosity is not desired
+    o_il2cpp_object_new = (il2cpp_object_new_t)il2cpp_object_new;
+    o_il2cpp_runtime_invoke = (il2cpp_runtime_invoke_t)il2cpp_runtime_invoke;
+
+    if (g_verboseBridge) 
     {
-        GLUMITYV2_GAME_HOOK_CREATE("il2cpp_object_new", il2cpp_object_new, il2cpp_object_new_hook_v);
-        GLUMITYV2_GAME_HOOK_CREATE("il2cpp_runtime_invoke", il2cpp_runtime_invoke, il2cpp_runtime_invoke_hook_v);
+        GLUMITYV2_GAME_HOOK_CREATE("il2cpp_object_new", o_il2cpp_object_new, il2cpp_object_new_hook_v);
+        GLUMITYV2_GAME_HOOK_CREATE("il2cpp_runtime_invoke", o_il2cpp_runtime_invoke, il2cpp_runtime_invoke_hook_v);
     }
     else
     {
-        GLUMITYV2_GAME_HOOK_CREATE("il2cpp_object_new", il2cpp_object_new, il2cpp_object_new_hook);
-        GLUMITYV2_GAME_HOOK_CREATE("il2cpp_runtime_invoke", il2cpp_runtime_invoke, il2cpp_runtime_invoke_hook);
+        GLUMITYV2_GAME_HOOK_CREATE("il2cpp_object_new", o_il2cpp_object_new, il2cpp_object_new_hook);
+        GLUMITYV2_GAME_HOOK_CREATE("il2cpp_runtime_invoke", o_il2cpp_runtime_invoke, il2cpp_runtime_invoke_hook);
     }
 
     GLUMITYV2_GAME_HOOK_ENABLE_ALL(MY_PLUGIN);

@@ -23,6 +23,7 @@ namespace GlumityV2Dumper
     private:
         std::vector<Il2CppClass *> m_gameClasses;
         bool m_initState = false;
+        const char *lastImage = nullptr;
 
         void EnsureIL2CPPThread()
         {
@@ -57,14 +58,30 @@ namespace GlumityV2Dumper
             return nullptr;
         }
 
+        // Ensure lastImage is initialized to nullptr somewhere globally/in class header:
+        // const char* lastImage = nullptr;
+
         void FetchClasses(const char *imageTargetName)
         {
+            if (imageTargetName == nullptr)
+                return;
+
+            if (lastImage != nullptr && strcmp(imageTargetName, lastImage) == 0)
+            {
+                GlumityPlugin_printf("Aborting: read to previously cached image detected! (%s).\n", PRINT_HEAD, imageTargetName);
+                return;
+            }
+
             m_gameClasses.clear();
             EnsureIL2CPPThread();
 
-            if (!il2cpp_domain_get)
+            if (lastImage != nullptr)
             {
-                GlumityPlugin_printf("Aborting: 'il2cpp_domain_get' is null.\n", PRINT_HEAD);
+            }
+
+            if (!il2cpp_domain_get || !il2cpp_domain_get_assemblies)
+            {
+                GlumityPlugin_printf("CRITICAL EXCEPTION: IL2CPP domain functions are missing!\n", PRINT_HEAD);
                 return;
             }
 
@@ -75,78 +92,59 @@ namespace GlumityV2Dumper
                 return;
             }
 
-            if (!il2cpp_domain_get_assemblies)
-            {
-                GlumityPlugin_printf("CRITICAL EXCEPTION: 'il2cpp_domain_get_assemblies' function address is missing! Cannot scan engine domain.\n", PRINT_HEAD);
-                return;
-            }
-
             size_t count = 0;
             GlumityPlugin_printf("Retrieving loaded IL2CPP assemblies...\n", PRINT_HEAD);
             const Il2CppAssembly **assemblies = il2cpp_domain_get_assemblies(domain, &count);
 
             if (!assemblies || count == 0)
             {
-                GlumityPlugin_printf("Error: Failed to locate assemblies array or assembly count returned zero.\n", PRINT_HEAD);
+                GlumityPlugin_printf("Error: Failed to locate assemblies array or count is zero.\n", PRINT_HEAD);
                 return;
             }
             GlumityPlugin_printf("Found %d total assemblies inside game domain.\n", PRINT_HEAD, (int)count);
 
             const Il2CppImage *targetImage = nullptr;
 
-            // Safe checks inside loop to ensure helper pointers are valid before dereferencing
             for (size_t i = 0; i < count; i++)
             {
                 const Il2CppAssembly *asm_ = assemblies[i];
-                if (!asm_)
+                if (!asm_ || !il2cpp_assembly_get_image || !il2cpp_image_get_name)
                     continue;
 
-                if (!il2cpp_assembly_get_image)
-                {
-                    GlumityPlugin_printf("Error: 'il2cpp_assembly_get_image' pointer is null.\n", PRINT_HEAD);
-                    break;
-                }
                 const Il2CppImage *image = il2cpp_assembly_get_image(asm_);
                 if (!image)
                     continue;
 
-                if (!il2cpp_image_get_name)
-                {
-                    GlumityPlugin_printf("Error: 'il2cpp_image_get_name' pointer is null.\n", PRINT_HEAD);
-                    break;
-                }
                 const char *imgName = il2cpp_image_get_name(image);
                 if (!imgName)
                     continue;
 
-                if (strstr(imgName, imageTargetName) != nullptr)
+                std::string currentImageName(imgName);
+                std::string targetName(imageTargetName);
+
+                // Ensure both have or don't have .dll for an exact equal comparison
+                if (currentImageName == targetName || currentImageName == targetName + ".dll")
                 {
-                    GlumityPlugin_printf("Matched target metadata image image context: %s\n", PRINT_HEAD, imgName);
+                    GlumityPlugin_printf("Matched exact target metadata image context: %s\n", PRINT_HEAD, imgName);
                     targetImage = image;
                     break;
                 }
             }
 
-            if (!targetImage && count > 0 && il2cpp_assembly_get_image)
-            {
-                GlumityPlugin_printf("Target image '%s' not explicitly found. Falling back to assembly index [0].\n", PRINT_HEAD, imageTargetName);
-                targetImage = il2cpp_assembly_get_image(assemblies[0]);
-            }
-
             if (!targetImage)
             {
-                GlumityPlugin_printf("Error: Could not resolve a valid target assembly Il2CppImage structure.\n", PRINT_HEAD);
+                GlumityPlugin_printf("Error: Could not resolve target assembly '%s'.\n", PRINT_HEAD, imageTargetName);
                 return;
             }
 
             if (!il2cpp_image_get_class_count || !il2cpp_image_get_class)
             {
-                GlumityPlugin_printf("CRITICAL ERROR: Class retrieval function maps are null! Cannot read table data.\n", PRINT_HEAD);
+                GlumityPlugin_printf("CRITICAL ERROR: Class retrieval maps are null!\n", PRINT_HEAD);
                 return;
             }
 
             size_t classCount = il2cpp_image_get_class_count((Il2CppImage *)targetImage);
-            GlumityPlugin_printf("Parsing classes from image... Total metadata classes discovered: %d\n", PRINT_HEAD, (int)classCount);
+            GlumityPlugin_printf("Parsing classes. Total metadata classes discovered: %d\n", PRINT_HEAD, (int)classCount);
 
             m_gameClasses.reserve(classCount);
 
@@ -154,8 +152,16 @@ namespace GlumityV2Dumper
             {
                 const Il2CppClass *klass = il2cpp_image_get_class((Il2CppImage *)targetImage, i);
                 if (klass)
+                {
                     m_gameClasses.push_back((Il2CppClass *)klass);
+                }
             }
+
+            if (lastImage)
+            {
+                free((void *)lastImage);
+            }
+            lastImage = strdup(imageTargetName);
         }
 
         void Init()

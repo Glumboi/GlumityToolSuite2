@@ -24,7 +24,7 @@ int g_showWindow = 0;
 #define IDC_HOTKEY_SHOW_HIDE 105
 #define IDC_ADDRESS_LIST 106
 #define IDC_FILTER_TEXT 107
-#define IDC_IMAGE_COMBO 108 
+#define IDC_IMAGE_COMBO 108
 
 HWND g_hInputEdit = NULL;
 HWND g_hLookupBtn = NULL;
@@ -32,21 +32,20 @@ HWND g_hOutputEdit = NULL;
 HWND g_hBytesEdit = NULL;
 HWND g_hListBox = NULL;
 HWND g_hFilterEdit = NULL;
-HWND g_hImageCombo = NULL; 
+HWND g_hImageCombo = NULL;
 
 DWORD g_toggleKey = VK_INSERT;
 
-// Structured cache tracking raw pointer arrays found inside the game runtime domain
 struct CachedClassInfo
 {
     std::wstring className;
-    std::wstring fullName; // Format: "ClassName MethodName"
+    std::wstring fullName; // "ClassName MethodName"
 };
 
 std::vector<const Il2CppImage *> g_DiscoveredImages;
 std::vector<CachedClassInfo> g_ActiveImageClasses;
 
-// UTF-8 conversion helpers 
+// UTF-8 conversion helpers for frictionless Windows string management
 std::wstring UTF8ToWide(const char *utf8Str)
 {
     if (!utf8Str)
@@ -56,7 +55,7 @@ std::wstring UTF8ToWide(const char *utf8Str)
         return L"";
     std::wstring wide(size, L'\0');
     MultiByteToWideChar(CP_UTF8, 0, utf8Str, -1, &wide[0], size);
-    wide.resize(size - 1); 
+    wide.resize(size - 1);
     return wide;
 }
 
@@ -73,7 +72,6 @@ std::string WideToUTF8(const wchar_t *wideStr)
     return utf8;
 }
 
-// Scans active domain memory to identify all assemblies loaded by the exe
 void PopulateImageDropdown()
 {
     if (!il2cpp_domain_get || !il2cpp_domain_get_assemblies || !il2cpp_assembly_get_image || !il2cpp_image_get_name)
@@ -256,11 +254,11 @@ void PerformAddressLookup(const wchar_t *query)
         return;
     }
 
-    // Convert parameters to broad standard UTF-8 string boundaries to trace hidden runtime table links
     std::string utf8Class = WideToUTF8(className);
     std::string utf8Method = WideToUTF8(methodName);
 
-    funcPtr = dumperExports.GlumityV2Dumper_GetFunctionPointer_Global(utf8Class.c_str(), utf8Method.c_str());
+    // Exact function pointer resolution mapping matching your exact structural specs
+    funcPtr = dumperExports.GlumityV2Dumper_GetFunctionPointer(NULL, utf8Class.c_str(), utf8Method.c_str());
 
     wchar_t bytesRes[512] = {0};
     if (funcPtr != NULL)
@@ -328,18 +326,28 @@ void PerformAddressLookup(const wchar_t *query)
                    L"        %s_%s_o,\r\n"
                    L"        %s_%s_hook);\r\n\r\n"
                    L"    GLUMITYV2_GAME_HOOK_ENABLE_ALL(MY_PLUGIN);\r\n"
-                   L"}\r\n",
-                   className, methodName, funcPtr,
-                   className,
-                   className, methodName, className,
-                   className, methodName, className, methodName,
-                   className, methodName, className,
-                   className, methodName,
-                   funcPtr,
-                   className, methodName, className, methodName, utf8Class.c_str(), utf8Method.c_str(),
-                   className, methodName,
-                   className, methodName,
-                   className, methodName);
+                   L"}\r\n"
+                   L"\r\n"
+                   L"GLUMITYV2_PLUGIN_ENTRY\r\n"
+                   L"{\r\n"
+                   L"    GLUMITYV2_PLUGIN_THREADRUN(Setup, 0);\r\n"
+                   L"}\r\n"
+                   L"\r\n"
+                   L"GLUMITYV2_PLUGIN_EXIT\r\n"
+                   L"{\r\n"
+                   L"    GLUMITYV2_GAME_HOOK_CLEAN_ALL();\r\n"
+                   L"} \r\n",
+                   className, methodName, funcPtr,                                                      // Header Block values
+                   className,                                                                           // struct %s;
+                   className, methodName, className,                                                    // GLUMITYV2_GAME_HOOK_TYPE macro line
+                   className, methodName, className, methodName,                                        // Hook Type Assignment definitions
+                   className, methodName, className,                                                    // void* %s_%s_hook callback setup
+                   className, methodName,                                                               // return internal original call pointer
+                   funcPtr,                                                                             // Address trace verification comment
+                   className, methodName, className, methodName, utf8Class.c_str(), utf8Method.c_str(), // GetFunctionPointer initialization line
+                   className, methodName,                                                               // Hook identification tag
+                   className, methodName,                                                               // Original tracking function target
+                   className, methodName);                                                              // Hook target redirection pointer
 
         SetWindowTextW(g_hOutputEdit, res);
         free(res);
@@ -417,7 +425,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             if (idx != CB_ERR)
             {
                 CacheClassesFromSelectedImage(idx);
-
                 SetWindowTextW(g_hFilterEdit, L"");
                 ApplyListFilter(L"");
             }
