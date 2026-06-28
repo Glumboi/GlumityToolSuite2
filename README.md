@@ -1,4 +1,4 @@
-# GlumityToolSuite2
+# GlumityToolSuite2 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/Glumboi/GlumityToolSuite2)
 A work in progress, lightweight-ish suite for modifying il2cpp unity games
 
 # Features/Startup steps
