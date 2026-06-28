@@ -1,4 +1,3 @@
-
 #include <windows.h>
 #include <GlumityLib.h>
 #include <string.h>
@@ -6,6 +5,7 @@
 #include <stdio.h>
 #include <vector>
 #include <string>
+#include <filesystem>
 
 #include "il2cppInternal.h"
 
@@ -39,13 +39,12 @@ DWORD g_toggleKey = VK_INSERT;
 struct CachedClassInfo
 {
     std::wstring className;
-    std::wstring fullName; // "ClassName MethodName"
+    std::wstring fullName;
 };
 
 std::vector<const Il2CppImage *> g_DiscoveredImages;
 std::vector<CachedClassInfo> g_ActiveImageClasses;
 
-// UTF-8 conversion helpers for frictionless Windows string management
 std::wstring UTF8ToWide(const char *utf8Str)
 {
     if (!utf8Str)
@@ -257,8 +256,19 @@ void PerformAddressLookup(const wchar_t *query)
     std::string utf8Class = WideToUTF8(className);
     std::string utf8Method = WideToUTF8(methodName);
 
-    // Exact function pointer resolution mapping matching your exact structural specs
-    funcPtr = dumperExports.GlumityV2Dumper_GetFunctionPointer(NULL, utf8Class.c_str(), utf8Method.c_str());
+    std::string targetImageName = "Assembly-CSharp";
+    int currentImageIdx = (int)SendMessageW(g_hImageCombo, CB_GETCURSEL, 0, 0);
+    if (currentImageIdx != CB_ERR && currentImageIdx < (int)g_DiscoveredImages.size())
+    {
+        const char *imgName = il2cpp_image_get_name(g_DiscoveredImages[currentImageIdx]);
+        if (imgName)
+        {
+            std::filesystem::path pathParser(imgName);
+            targetImageName = pathParser.stem().string();
+        }
+    }
+
+    funcPtr = dumperExports.GlumityV2Dumper_GetFunctionPointer(targetImageName.c_str(), utf8Class.c_str(), utf8Method.c_str());
 
     wchar_t bytesRes[512] = {0};
     if (funcPtr != NULL)
@@ -316,7 +326,7 @@ void PerformAddressLookup(const wchar_t *query)
                    L"{\r\n"
                    L"    GLUMITYV2_VERIFY_DEPENDENCY(\"GlumityV2IL2CPPDumper\");\r\n"
                    L"    GLUMITYV2_DUMPER_WAITFOR_INIT(dumperExports);\r\n\r\n"
-                   L"    %s_%s_o = (%s_%s_t)dumperExports.GlumityV2Dumper_GetFunctionPointer(\"%S\", \"%S\");\r\n\r\n"
+                   L"    %s_%s_o = (%s_%s_t)dumperExports.GlumityV2Dumper_GetFunctionPointer(\"%S\", \"%S\", \"%S\");\r\n\r\n"
                    L"    GLUMITYV2_INIT_HOOKING(MY_PLUGIN, OnHookInitFail)\r\n"
                    L"    {\r\n"
                    L"        GLUMITY_PRINT_COLOR(CON_GREEN, \"Initialized Minhook\\n\", MY_PLUGIN);\r\n"
@@ -337,17 +347,18 @@ void PerformAddressLookup(const wchar_t *query)
                    L"{\r\n"
                    L"    GLUMITYV2_GAME_HOOK_CLEAN_ALL();\r\n"
                    L"} \r\n",
-                   className, methodName, funcPtr,                                                      // Header Block values
-                   className,                                                                           // struct %s;
-                   className, methodName, className,                                                    // GLUMITYV2_GAME_HOOK_TYPE macro line
-                   className, methodName, className, methodName,                                        // Hook Type Assignment definitions
-                   className, methodName, className,                                                    // void* %s_%s_hook callback setup
-                   className, methodName,                                                               // return internal original call pointer
-                   funcPtr,                                                                             // Address trace verification comment
-                   className, methodName, className, methodName, utf8Class.c_str(), utf8Method.c_str(), // GetFunctionPointer initialization line
-                   className, methodName,                                                               // Hook identification tag
-                   className, methodName,                                                               // Original tracking function target
-                   className, methodName);                                                              // Hook target redirection pointer
+                   className, methodName, funcPtr,
+                   className,
+                   className, methodName, className,
+                   className, methodName, className, methodName,
+                   className, methodName, className,
+                   className, methodName,
+                   funcPtr,
+                   className, methodName, className, methodName, targetImageName.c_str(), utf8Class.c_str(), utf8Method.c_str(),
+                   className, methodName,
+                   className, methodName,
+                   className, methodName,
+                   className, methodName);
 
         SetWindowTextW(g_hOutputEdit, res);
         free(res);
