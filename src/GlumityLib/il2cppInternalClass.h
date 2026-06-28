@@ -318,9 +318,10 @@ typedef union Il2CppRGCTXData
 
 typedef struct MethodInfo
 {
-    Il2CppMethodPointer methodPointer;
-    InvokerMethod invoker_method;
-    char const *name;
+   Il2CppMethodPointer methodPointer;       
+    Il2CppMethodPointer virtualMethodPointer; 
+    InvokerMethod invoker_method;             
+    char const *name;                         
     struct Il2CppClass *klass;
     struct Il2CppType const *return_type;
     struct ParameterInfo const *parameters;
