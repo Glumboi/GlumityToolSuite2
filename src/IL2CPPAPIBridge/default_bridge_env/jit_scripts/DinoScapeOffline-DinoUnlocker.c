@@ -68,8 +68,8 @@ GLUMITYV2_GAME_HOOK_TYPE(BOOL, DinoInfo_CheckIfOwned_t)(struct DinoInfo *, struc
 DinoInfo_CheckIfOwned_t DinoInfo_CheckIfOwned_o;
 BOOL DinoInfo_CheckIfOwned_hook(struct DinoInfo *_this, struct IL2CPP_MethodInfo *mi)
 {
-    _this->fields.owned = true;
-    return true; // Force unlock all dinos!
+    _this->fields.owned = 0;
+    return 0; // Force unlock all dinos!
 }
 
 #pragma endregion

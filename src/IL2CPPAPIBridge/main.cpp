@@ -6,12 +6,14 @@
 #include <set>
 #include <filesystem>
 #include <memoryapi.h>
+#include <atomic>
 
 #include "include/libtcc.h"
 
 #include "globals.h"
 #include "defines.h"
 #include "il2cppHooks.h"
+#include "il2cppInternal.h"
 
 struct DeadMemoryBlock
 {
@@ -24,15 +26,7 @@ std::vector<DeadMemoryBlock> g_zombieBlocks;
 std::map<std::string, GlumityPlugin> g_activePlugins;
 std::set<void *> g_trackedHookTargets;
 
-extern "C" __declspec(dllexport) MH_STATUS __cdecl GlumityV2_TrackedCreateHook(LPVOID pTarget, LPVOID pDetour, LPVOID *ppOriginal)
-{
-    MH_STATUS status = MH_CreateHook(pTarget, pDetour, ppOriginal);
-    if (status == MH_OK || status == MH_ERROR_ALREADY_CREATED)
-    {
-        g_trackedHookTargets.insert(pTarget);
-    }
-    return status;
-}
+std::atomic<bool> g_keepKeyboardUpdateLoopAlive{true};
 
 VOID TCC_Error_Handler(void *opaque, const char *msg)
 {
@@ -58,31 +52,14 @@ void LoadAndRunSingleScript(const std::filesystem::path &scriptPath, const char 
         return;
     }
 
-    tcc_add_symbol(tccState, "MH_CreateHook", (const void *)GlumityV2_TrackedCreateHook);
-
     for (auto &apiFunc : hardApiFuncs)
         tcc_add_symbol(tccState, apiFunc.first.c_str(), (const void *)apiFunc.second);
 
     for (auto &lib : G_HARD_LIBS)
         tcc_add_library(tccState, lib.c_str());
 
-    int size = tcc_relocate(tccState, NULL);
-    if (size <= 0)
+    if (tcc_relocate(tccState, TCC_RELOCATE_AUTO) < 0)
     {
-        tcc_delete(tccState);
-        return;
-    }
-
-    void *program = VirtualAlloc(NULL, size, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
-    if (!program)
-    {
-        tcc_delete(tccState);
-        return;
-    }
-
-    if (tcc_relocate(tccState, program) < 0)
-    {
-        VirtualFree(program, 0, MEM_RELEASE);
         tcc_delete(tccState);
         return;
     }
@@ -93,7 +70,6 @@ void LoadAndRunSingleScript(const std::filesystem::path &scriptPath, const char 
 
     if (scriptPathString.length() >= sizeof(plugin.dllPath))
     {
-        VirtualFree(program, 0, MEM_RELEASE);
         tcc_delete(tccState);
         return;
     }
@@ -102,8 +78,8 @@ void LoadAndRunSingleScript(const std::filesystem::path &scriptPath, const char 
     plugin.tccState = tccState;
     plugin.hDll = NULL;
     plugin.name = _strdup(scriptPath.filename().string().c_str());
-    plugin.compiledSz = size;
-    plugin.programBase = program;
+    plugin.compiledSz = 0;
+    plugin.programBase = NULL;
 
     if (plugin.entryPoint)
     {
@@ -140,18 +116,26 @@ VOID HotReloadJITScripts()
     char pathBuffer[MAX_PATH] = {0};
     GetPluginDirectory(hCurrentDll, pathBuffer, sizeof(pathBuffer));
 
-    std::filesystem::path baseDir(pathBuffer);
-    std::string libs = (baseDir / "tcc_libs").string();
-    std::string incs = (baseDir / "tcc_include").string();
+    size_t len = strlen(pathBuffer);
+    if (len > 0 && pathBuffer[len - 1] != '\\')
+    {
+        strcat_s(pathBuffer, sizeof(pathBuffer), "\\");
+    }
+
+    char libs[MAX_PATH];
+    strcpy_s(libs, sizeof(libs), pathBuffer);
+    char incs[MAX_PATH];
+    strcpy_s(incs, sizeof(incs), pathBuffer);
+
+    strcat_s(libs, sizeof(libs), "tcc_libs");
+    strcat_s(incs, sizeof(incs), "tcc_include");
 
     g_isReloading = true;
 
     for (auto &[path, plugin] : g_activePlugins)
     {
         if (plugin.exitPoint)
-        {
-            plugin.exitPoint(); 
-        }
+            plugin.exitPoint();
     }
 
     for (void *targetAddress : g_trackedHookTargets)
@@ -160,20 +144,17 @@ VOID HotReloadJITScripts()
         {
             MH_DisableHook(targetAddress);
             MH_RemoveHook(targetAddress);
-            GLUMITY_PRINT_COLOR(CON_YELLOW, "Safely restored game function bytes: %p\n", MY_PLUGIN, targetAddress);
         }
     }
     g_trackedHookTargets.clear();
 
-    Sleep(30);
+    Sleep(60);
 
     std::vector<std::string> pathsToReload;
     for (auto &[path, plugin] : g_activePlugins)
     {
         pathsToReload.push_back(path);
-
-        DeadMemoryBlock zombie = {plugin.programBase, plugin.tccState, plugin.name};
-        g_zombieBlocks.push_back(zombie);
+        g_zombieBlocks.push_back({plugin.programBase, plugin.tccState, plugin.name});
     }
 
     g_activePlugins.clear();
@@ -181,10 +162,28 @@ VOID HotReloadJITScripts()
     for (const std::string &scriptPath : pathsToReload)
     {
         GLUMITY_PRINT_COLOR(CON_YELLOW, "Applying script updates: %s\n", MY_PLUGIN, scriptPath.c_str());
-        LoadAndRunSingleScript(std::filesystem::path(scriptPath), libs.c_str(), incs.c_str());
+        LoadAndRunSingleScript(std::filesystem::path(scriptPath), libs, incs);
     }
 
     g_isReloading = false;
+}
+
+VOID KeyboardUpdateLoop()
+{
+    while (g_keepKeyboardUpdateLoopAlive)
+    {
+        if ((GetAsyncKeyState(VK_END) & 0x8000) != 0)
+        {
+            GLUMITY_PRINT_COLOR(CON_CYAN, "End pressed, reloading jit_scripts...\n", MY_PLUGIN);
+            HotReloadJITScripts();
+
+            while ((GetAsyncKeyState(VK_END) & 0x8000) != 0)
+            {
+                Sleep(10);
+            }
+        }
+        Sleep(10);
+    }
 }
 
 VOID Setup()
@@ -211,33 +210,20 @@ VOID Setup()
 
     GetPluginDirectory(hCurrentDll, pathBuffer, sizeof(pathBuffer));
     ProcessJITScriptsFolder(pathBuffer, libs, incs);
-
-    while (1)
-    {
-        if ((GetAsyncKeyState(VK_END) & 0x8000) != 0)
-        {
-            GLUMITY_PRINT_COLOR(CON_CYAN, "End pressed, reloading jit_scripts...\n", MY_PLUGIN);
-            HotReloadJITScripts();
-
-            while (GetAsyncKeyState(VK_END) & 0x8000)
-            {
-                Sleep(10);
-            }
-
-            Sleep(50);
-        }
-        Sleep(10);
-    }
 }
 
 GLUMITYV2_PLUGIN_ENTRY
 {
     GLUMITYV2_PLUGIN_THREADRUN(Setup, 0);
+    GLUMITYV2_PLUGIN_THREADRUN(KeyboardUpdateLoop, NULL);
 }
 
 GLUMITYV2_PLUGIN_EXIT
 {
     GLUMITYV2_GAME_HOOK_CLEAN_ALL();
+
+    g_keepKeyboardUpdateLoopAlive = false;
+    Sleep(50);
 
     for (auto &zombie : g_zombieBlocks)
     {

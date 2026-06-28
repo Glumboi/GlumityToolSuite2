@@ -1,13 +1,82 @@
-#include <GlumityLib.h>
-#include <sstream>
 #include <windows.h>
-#include <Psapi.h>
 #include <vector>
+#include <string>
 #include "Dumper.hpp"
 
 #define PRINT_HEAD "GlumityV2IL2CPPDumper"
 
-GlumityV2Dumper::Dumper dumper{};
+GlumityV2Dumper::Dumper dumper;
+
+EXPORT void GlumityV2Dumper_WaitForDumper()
+{
+    while (!dumper.GetInitState())
+    {
+        Sleep(60);
+    }
+}
+
+EXPORT void *GlumityV2Dumper_GetFunctionPointer(Il2CppClass *klass, const char *name, int argsCount)
+{
+    if (!klass || !name || !il2cpp_class_get_method_from_name)
+        return nullptr;
+
+    const MethodInfo *method = il2cpp_class_get_method_from_name(klass, name, argsCount);
+    if (!method)
+        return nullptr;
+
+    return (void *)method->methodPointer;
+}
+
+EXPORT char **GlumityV2Dumper_GetEverything()
+{
+    if (!dumper.GetInitState() || !il2cpp_domain_get || !il2cpp_thread_attach || !il2cpp_class_get_methods || !il2cpp_runtime_class_init)
+        return nullptr;
+
+    Il2CppDomain *domain = il2cpp_domain_get();
+    if (!domain)
+        return nullptr;
+
+    il2cpp_thread_attach(domain);
+
+    std::vector<std::string> tempStrings;
+
+    for (auto *klass : dumper.GetClasses())
+    {
+        if (!klass)
+            continue;
+
+        const char *className = il2cpp_class_get_name(klass);
+        if (!className)
+            continue;
+
+        il2cpp_runtime_class_init(klass);
+
+        void *iterator = nullptr;
+        while (const MethodInfo *method = il2cpp_class_get_methods(klass, &iterator))
+        {
+            if (!method || !method->name)
+                continue;
+
+            std::string entry = std::string(className) + " " + std::string(method->name);
+            tempStrings.push_back(entry);
+        }
+    }
+
+    if (tempStrings.empty())
+        return nullptr;
+
+    char **resultList = (char **)malloc((tempStrings.size() + 1) * sizeof(char *));
+    if (!resultList)
+        return nullptr;
+
+    for (size_t i = 0; i < tempStrings.size(); ++i)
+    {
+        resultList[i] = _strdup(tempStrings[i].c_str());
+    }
+    resultList[tempStrings.size()] = nullptr;
+
+    return resultList;
+}
 
 EXPORT void *GlumityV2Dumper_GetFunctionPointerWithPattern(HMODULE module, const char *signature)
 {
@@ -37,11 +106,11 @@ EXPORT void *GlumityV2Dumper_GetFunctionPointerWithPattern(HMODULE module, const
     };
 
     auto dosHeader = (PIMAGE_DOS_HEADER)module;
-    auto ntHeaders = (PIMAGE_NT_HEADERS)((std::uint8_t *)module + dosHeader->e_lfanew);
+    auto ntHeaders = (PIMAGE_NT_HEADERS)((uint8_t *)module + dosHeader->e_lfanew);
 
     auto sizeOfImage = ntHeaders->OptionalHeader.SizeOfImage;
     auto patternBytes = pattern_to_byte(signature);
-    auto scanBytes = reinterpret_cast<std::uint8_t *>(module);
+    auto scanBytes = reinterpret_cast<uint8_t *>(module);
 
     auto s = patternBytes.size();
     auto d = patternBytes.data();
@@ -68,92 +137,40 @@ EXPORT void *GlumityV2Dumper_GetFunctionPointerWithPattern(HMODULE module, const
     return nullptr;
 }
 
-EXPORT void GlumityV2Dumper_WaitForDumper()
+EXPORT void *GlumityV2Dumper_GetFunctionPointer_Global(const char *targetPEImage, const char *className, const char *functionName)
 {
-    while (!dumper.GetInitState())
+    if (!il2cpp_class_get_method_from_name)
     {
-        Sleep(60);
-        
-        continue;
-    }
-}
-
-// returns an array of strings containing info about all found game functions
-EXPORT char** GlumityV2Dumper_GetEverything()
-{
-    if (!dumper.GetInitState())
+        GLUMITY_PRINT_COLOR(CON_RED, "Could not find il2cpp_class_get_method_from_name!\n", PRINT_HEAD);
         return nullptr;
-
-    const auto& classes = dumper.GetClasses();
-    std::vector<std::string> tempStrings;
-
-    for (auto* klass : classes)
-    {
-        if (!klass || !klass->m_pName)
-            continue;
-
-        void* iter = nullptr;
-        while (auto* method = IL2CPP::Class::GetMethods(klass, &iter))
-        {
-            if (!method || !method->m_pName)
-                continue;
-
-            std::string entry = std::string(klass->m_pName) + " " + std::string(method->m_pName);
-            tempStrings.push_back(entry);
-        }
     }
 
-    if (tempStrings.empty())
-        return nullptr;
+    GlumityPlugin_printf("Beginning structured lookup for %s::%s\n", PRINT_HEAD, className, functionName);
 
-    char** resultList = (char**)malloc((tempStrings.size() + 1) * sizeof(char*));
-    if (!resultList)
-        return nullptr;
-
-    for (size_t i = 0; i < tempStrings.size(); ++i)
-    {
-        resultList[i] = _strdup(tempStrings[i].c_str());
-    }
-    resultList[tempStrings.size()] = nullptr;
-
-    return resultList;
-}
-
-EXPORT void *GlumityV2Dumper_GetFunctionPointer(const char *className, const char *functionName)
-{
-    GlumityPlugin_printf("Looking for function [%s] in class [%s]\n", PRINT_HEAD, functionName, className);
-    auto ret = IL2CPP::Class::Utils::GetMethodPointer(className, functionName);
-    if (!ret)
-        GlumityPlugin_printf("Not found!\n", PRINT_HEAD);
+    if (!targetPEImage)
+        dumper.FetchClasses(MAIN_IMAGE);
     else
-        GlumityPlugin_printf("Found!\n", PRINT_HEAD);
-    return ret;
-}
+        dumper.FetchClasses(targetPEImage);
 
-EXPORT void *GlumityV2Dumper_GetFunctionPointer_Global(const char *searchName, const char *functionName)
-{
-    std::vector<Unity::il2cppClass *> outClasses;
-    IL2CPP::Class::FetchClasses(&outClasses, "", "");
-    void *ret = nullptr;
-
-    for (auto currentClass : outClasses)
+    for (auto *klass : dumper.GetClasses())
     {
-        if (!currentClass || !currentClass->m_pName)
+        if (!klass)
             continue;
 
-        if (strstr(currentClass->m_pName, searchName) != nullptr)
-        {
-            GlumityPlugin_printf("Match Found: %s in Image: %x\n",
-                                 PRINT_HEAD,
-                                 currentClass->m_pName,
-                                 currentClass->m_pImage);
+        const char *kName = il2cpp_class_get_name(klass);
+        if (!kName || strcmp(kName, className) != 0)
+            continue;
 
-            ret = IL2CPP::Class::Utils::GetMethodPointer(currentClass, functionName);
+        GlumityPlugin_printf("Found class match. Querying method pointer safely...\n", PRINT_HEAD);
+
+        const MethodInfo *method = il2cpp_class_get_method_from_name(klass, functionName, -1);
+
+        if (method && method->methodPointer)
+        {
+            GlumityPlugin_printf("Successfully found method pointer: %p\n", PRINT_HEAD, method->methodPointer);
+            return (void *)method->methodPointer;
         }
     }
-
-    if (!ret)
-        GlumityPlugin_printf("Global search for [%s] failed.\n", PRINT_HEAD, searchName);
     return nullptr;
 }
 
@@ -162,28 +179,48 @@ EXPORT void *GlumityV2Dumper_GetFunctionPointer_FromModule(
     const char *className,
     const char *functionName)
 {
-    std::vector<Unity::il2cppClass *> outClasses;
-    IL2CPP::Class::FetchClasses(&outClasses, module, "");
-    void *ret = nullptr;
+    if (!module || !className || !functionName || !il2cpp_domain_get || !il2cpp_domain_get_assemblies || !il2cpp_class_get_method_from_name)
+        return nullptr;
 
-    for (auto currentClass : outClasses)
+    Il2CppDomain *domain = il2cpp_domain_get();
+    if (!domain)
+        return nullptr;
+
+    size_t count = 0;
+    const Il2CppAssembly **assemblies = il2cpp_domain_get_assemblies(domain, &count);
+    if (!assemblies)
+        return nullptr;
+
+    for (size_t i = 0; i < count; i++)
     {
-        if (!currentClass || !currentClass->m_pName)
+        const Il2CppImage *image = il2cpp_assembly_get_image(assemblies[i]);
+        if (!image)
             continue;
-        GlumityPlugin_printf("Found Class: %s (Module: %x)\n", PRINT_HEAD, currentClass->m_pName, currentClass->m_pImage);
-        if (strcmp(currentClass->m_pName, className) == 0)
-        {
-            GlumityPlugin_printf("Class match found!\n", PRINT_HEAD);
 
-            ret = IL2CPP::Class::Utils::GetMethodPointer(currentClass, functionName);
-            if (ret)
-                GlumityPlugin_printf("Method found!\n", PRINT_HEAD);
-            else
-                GlumityPlugin_printf("Method not found!\n", PRINT_HEAD);
+        const char *imgName = il2cpp_image_get_name(image);
+        if (!imgName)
+            continue;
+
+        if (strstr(imgName, module) != nullptr)
+        {
+            size_t classCount = il2cpp_image_get_class_count((Il2CppImage *)image);
+            for (size_t j = 0; j < classCount; j++)
+            {
+                const Il2CppClass *klass = il2cpp_image_get_class((Il2CppImage *)image, j);
+                if (!klass)
+                    continue;
+
+                const char *kName = il2cpp_class_get_name((Il2CppClass *)klass);
+                if (kName && strcmp(kName, className) == 0)
+                {
+                    const MethodInfo *method = il2cpp_class_get_method_from_name((Il2CppClass *)klass, functionName, -1);
+                    if (method && method->methodPointer)
+                        return (void *)method->methodPointer;
+                }
+            }
         }
     }
-
-    return ret;
+    return nullptr;
 }
 
 void InitDumper()
@@ -198,5 +235,5 @@ GLUMITYV2_PLUGIN_ENTRY
 
 GLUMITYV2_PLUGIN_EXIT
 {
-    dumper.~Dumper();
+    return 0;
 }
