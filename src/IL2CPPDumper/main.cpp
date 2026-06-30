@@ -137,6 +137,67 @@ EXPORT void *GlumityV2Dumper_GetFunctionPointerWithPattern(HMODULE module, const
     return nullptr;
 }
 
+EXPORT void* GlumityV2Dumper_GetFieldPtr(const char* targetPEImage, const char* className, const char* fieldName, void* instance)
+{
+    Il2CppClass* klass = nullptr;
+    for (auto* k : dumper.GetClasses()) {
+        if (strcmp(il2cpp_class_get_name(k), className) == 0) {
+            klass = k;
+            break;
+        }
+    }
+    if (!klass) return nullptr;
+
+    FieldInfo* field = il2cpp_class_get_field_from_name(klass, fieldName);
+    if (!field) return nullptr;
+
+    size_t offset = il2cpp_field_get_offset(field);
+
+    if (instance == nullptr) {
+        void* static_data = il2cpp_class_get_static_field_data(klass);
+        return (void*)((uintptr_t)static_data + offset);
+    } 
+    
+    return (void*)((uintptr_t)instance + offset);
+}
+
+EXPORT size_t GlumityV2Dumper_GetFieldOffset(const char *targetPEImage, const char *className, const char *fieldName)
+{
+    if (!il2cpp_class_from_name || !il2cpp_class_get_field_from_name || !il2cpp_field_get_offset)
+    {
+        GLUMITY_PRINT_COLOR(CON_RED, "Required IL2CPP functions not initialized!\n", PRINT_HEAD);
+        return (size_t)-1;
+    }
+
+    const Il2CppAssembly *image = il2cpp_domain_assembly_open(il2cpp_domain_get(), targetPEImage);
+    if (!image)
+    {
+        return (size_t)-1;
+    }
+
+    for (auto *klass : dumper.GetClasses())
+    {
+        if (!klass)
+            continue;
+
+        const char *kName = il2cpp_class_get_name(klass);
+        if (kName && strcmp(kName, className) == 0)
+        {
+            FieldInfo *field = il2cpp_class_get_field_from_name(klass, fieldName);
+
+            if (field)
+            {
+                size_t offset = il2cpp_field_get_offset(field);
+                GlumityPlugin_printf("Found offset for %s::%s: 0x%X\n", PRINT_HEAD, className, fieldName, offset);
+                return offset;
+            }
+        }
+    }
+
+    GlumityPlugin_printf("Failed to find field: %s in class: %s\n", PRINT_HEAD, fieldName, className);
+    return (size_t)-1;
+}
+
 EXPORT void *GlumityV2Dumper_GetFunctionPointer_Global(const char *targetPEImage, const char *className, const char *functionName)
 {
     if (!il2cpp_class_get_method_from_name)

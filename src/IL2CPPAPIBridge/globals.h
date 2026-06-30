@@ -25,12 +25,13 @@ inline MH_STATUS GlumityTrackedCreateHook(LPVOID pTarget, LPVOID pDetour, LPVOID
 
 inline std::map<std::string, GlumityGeneric_Func> hardApiFuncs = {
     {"GlumityPlugin_printf", reinterpret_cast<GlumityGeneric_Func>(&GlumityPlugin_printf)},
+    {"IL2CPP_String_Create", reinterpret_cast<GlumityGeneric_Func>(&IL2CPP_String_Create)},
     {"IL2CPP_String_ToCString", reinterpret_cast<GlumityGeneric_Func>(&IL2CPP_String_ToCString)},
     {"Glumity_GetErrorMessage", reinterpret_cast<GlumityGeneric_Func>(&Glumity_GetErrorMessage)},
     {"LoadIL2CPP", reinterpret_cast<GlumityGeneric_Func>(&LoadIL2CPP)},
     {"MH_CreateHook", reinterpret_cast<GlumityGeneric_Func>(&GlumityTrackedCreateHook)},
     {"MH_EnableHook", reinterpret_cast<GlumityGeneric_Func>(&MH_EnableHook)},
-    {"MH_Initialize", reinterpret_cast<GlumityGeneric_Func>(&MH_Initialize)},
+    {"MH_Initialize", reinterpret_cast<GlumityGeneric_Func>(&MH_Initialize)}, 
     {"MH_DisableHook", reinterpret_cast<GlumityGeneric_Func>(&MH_DisableHook)},
     {"MH_RemoveHook", reinterpret_cast<GlumityGeneric_Func>(&MH_RemoveHook)},
     {"GlumityV2DumperExports_Init", reinterpret_cast<GlumityGeneric_Func>(&GlumityV2DumperExports_Init)},

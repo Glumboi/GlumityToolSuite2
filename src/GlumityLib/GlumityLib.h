@@ -12,7 +12,7 @@
 
 #ifndef GAME_ASSEMBLY
 #define GAME_ASSEMBLY "GameAssembly.dll"
-#endif 
+#endif
 
 #define GLUMITYLIB_PRINT_HEADER "GlumityV2Lib"
 
@@ -85,6 +85,31 @@ inline char *IL2CPP_String_ToCString(GlumityV2_il2cppStr *str)
 /// @brief Allocates memory, caller has to manage returned pointer, can be ignored as well and let the game "manage" it, might cause leaks eventually
 /// @param input Any null terminated c string
 /// @return A pointer to a newly allocated il2cpp string
-GlumityV2_il2cppStr *IL2CPP_String_Create(const char *input);
+inline GlumityV2_il2cppStr *IL2CPP_String_Create(const char *input)
+{
+    if (!input)
+        return NULL;
+
+    size_t len = strlen(input);
+    size_t size = sizeof(GlumityV2_il2cppStr) + (len * sizeof(uint16_t));
+
+    GlumityV2_il2cppStr *str = (GlumityV2_il2cppStr *)malloc(size);
+    if (!str)
+        return NULL;
+
+    str->klass = NULL;
+    str->monitor = NULL;
+
+    str->fields.m_stringLength = (int32_t)len;
+
+    uint16_t *buffer = &str->fields.m_firstChar;
+
+    for (size_t i = 0; i < len; i++)
+    {
+        buffer[i] = (uint16_t)input[i];
+    }
+
+    return str;
+}
 
 #endif

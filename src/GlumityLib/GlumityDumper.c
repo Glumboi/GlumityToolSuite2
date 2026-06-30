@@ -19,4 +19,6 @@ void GlumityV2DumperExports_Init(GlumityV2DumperExports *dumperExports)
     dumperExports->GlumityV2Dumper_GetFunctionPointer = dumperExports->GlumityV2Dumper_GetFunctionPointer_Global;
     dumperExports->GlumityV2Dumper_GetEverything = INIT_GLUMITYV2_EXPORT(mod, "GlumityV2Dumper_GetEverything", GlumityV2Dumper_GetEverything_t);
     dumperExports->GlumityV2Dumper_WaitForDumper = INIT_GLUMITYV2_EXPORT(mod, "GlumityV2Dumper_WaitForDumper", GlumityV2Dumper_WaitForDumper_t);
+    dumperExports->GlumityV2Dumper_GetFieldOffset = INIT_GLUMITYV2_EXPORT(mod, "GlumityV2Dumper_GetFieldOffset", GlumityV2Dumper_GetFieldOffset_t);
+    dumperExports->GlumityV2Dumper_GetFieldPtr = INIT_GLUMITYV2_EXPORT(mod, "GlumityV2Dumper_GetFieldPtr", GlumityV2Dumper_GetFieldPtr_t);
 }
