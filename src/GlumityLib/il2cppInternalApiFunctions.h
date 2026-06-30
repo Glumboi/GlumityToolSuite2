@@ -88,6 +88,7 @@ DO_API(TypeInfo *, il2cpp_class_get_interfaces, (TypeInfo * klass, void **iter))
 DO_API(const PropertyInfo *, il2cpp_class_get_properties, (TypeInfo * klass, void **iter));
 DO_API(const PropertyInfo *, il2cpp_class_get_property_from_name, (TypeInfo * klass, const char *name));
 DO_API(FieldInfo *, il2cpp_class_get_field_from_name, (TypeInfo * klass, const char *name));
+DO_API(void *, il2cpp_class_get_static_field_data, (TypeInfo * klass));
 DO_API(const MethodInfo *, il2cpp_class_get_methods, (TypeInfo * klass, void **iter));
 DO_API(const MethodInfo *, il2cpp_class_get_method_from_name, (TypeInfo * klass, const char *name, int argsCount));
 DO_API(const char *, il2cpp_class_get_name, (TypeInfo * klass));
