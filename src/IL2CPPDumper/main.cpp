@@ -151,13 +151,17 @@ EXPORT void* GlumityV2Dumper_GetFieldPtr(const char* targetPEImage, const char* 
     FieldInfo* field = il2cpp_class_get_field_from_name(klass, fieldName);
     if (!field) return nullptr;
 
+    il2cpp_runtime_class_init(klass);
+
     size_t offset = il2cpp_field_get_offset(field);
 
     if (instance == nullptr) {
         void* static_data = il2cpp_class_get_static_field_data(klass);
-        return (void*)((uintptr_t)static_data + offset);
+        return (static_data != nullptr) ? (void*)((uintptr_t)static_data + offset) : nullptr;
     } 
     
+    if ((uintptr_t)instance < 0x1000) return nullptr; 
+
     return (void*)((uintptr_t)instance + offset);
 }
 
