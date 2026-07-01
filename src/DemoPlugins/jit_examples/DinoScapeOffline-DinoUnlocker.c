@@ -30,7 +30,7 @@ void* DinoInfo_CheckIfOwned_hook(struct DinoInfo* _this)
 	_this->fields.owned = 1; 
 	// or
 	//char* owned = (char*)(_this)+0x10+0x51;
-	*owned = 1;
+	//*owned = 1;
 	return 1;
 }
 
